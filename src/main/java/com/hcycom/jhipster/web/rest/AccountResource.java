@@ -1,47 +1,54 @@
 package com.hcycom.jhipster.web.rest;
 
-import com.codahale.metrics.annotation.Timed;
+import java.util.Optional;
 
-import com.hcycom.jhipster.domain.User;
-import com.hcycom.jhipster.repository.UserRepository;
-import com.hcycom.jhipster.security.SecurityUtils;
-import com.hcycom.jhipster.service.MailService;
-import com.hcycom.jhipster.service.UserService;
-import com.hcycom.jhipster.service.dto.UserDTO;
-import com.hcycom.jhipster.web.rest.errors.*;
-import com.hcycom.jhipster.web.rest.vm.KeyAndPasswordVM;
-import com.hcycom.jhipster.web.rest.vm.ManagedUserVM;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.util.*;
+import com.codahale.metrics.annotation.Timed;
+import com.hcycom.jhipster.domain.User;
+import com.hcycom.jhipster.security.SecurityUtils;
+import com.hcycom.jhipster.service.UserService;
+import com.hcycom.jhipster.web.rest.errors.EmailAlreadyUsedException;
+import com.hcycom.jhipster.web.rest.errors.InternalServerErrorException;
+import com.hcycom.jhipster.web.rest.errors.InvalidPasswordException;
+import com.hcycom.jhipster.web.rest.errors.LoginAlreadyUsedException;
+import com.hcycom.jhipster.web.rest.vm.UsernameAndPasswordVM;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
 * REST controller for managing the current user's account.
 */
 @RestController
 @RequestMapping("/api")
+@Api(tags = { "账户资源管理" })
 public class AccountResource {
 
     private final Logger log = LoggerFactory.getLogger(AccountResource.class);
 
-    private final UserRepository userRepository;
 
     private final UserService userService;
 
-    private final MailService mailService;
 
-    public AccountResource(UserRepository userRepository, UserService userService, MailService mailService) {
+    public AccountResource( UserService usersService) {
 
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.mailService = mailService;
+        this.userService = usersService;
     }
 
     /**
@@ -55,26 +62,28 @@ public class AccountResource {
     @PostMapping("/register")
     @Timed
     @ResponseStatus(HttpStatus.CREATED)
-    public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
-        if (!checkPasswordLength(managedUserVM.getPassword())) {
+    @ApiOperation(value = "注册用户", notes = "新增用户未激活")
+    public void registerAccount(@Valid @RequestBody User user) {
+        if (!checkPasswordLength(user.getPassword())) {
             throw new InvalidPasswordException();
         }
-        userRepository.findOneByLogin(managedUserVM.getLogin().toLowerCase()).ifPresent(u -> {throw new LoginAlreadyUsedException();});
-        userRepository.findOneByEmailIgnoreCase(managedUserVM.getEmail()).ifPresent(u -> {throw new EmailAlreadyUsedException();});
-        User user = userService.registerUser(managedUserVM);
-        mailService.sendActivationEmail(user);
+        userService.findeUserByName(user.getUsername().toLowerCase()).ifPresent(u -> {throw new LoginAlreadyUsedException();});
+        User user1 = userService.registerUser(user);
     }
 
     /**
-    * GET  /activate : activate the registered user.
+    * GET  /activate : 激活已注册用户
     *
     * @param key the activation key
     * @throws RuntimeException 500 (Internal Server Error) if the user couldn't be activated
     */
     @GetMapping("/activate")
     @Timed
-    public void activateAccount(@RequestParam(value = "key") String key) {
-        Optional<User> user = userService.activateRegistration(key);
+    @ApiOperation(value = "激活用户", notes = "将未激活或用户激活")
+    public void activateAccount(@RequestParam(value = "username") String username) {
+    	User user2=new User();
+    	user2.setUsername(username);
+        Optional<User> user = userService.activateRegistration(user2);
         if (!user.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
         };
@@ -88,6 +97,7 @@ public class AccountResource {
     */
     @GetMapping("/authenticate")
     @Timed
+    @ApiOperation(value = "检测是否有ouath2秘钥", notes = "检查用户是否经过身份验证，并返回其登录。")
     public String isAuthenticated(HttpServletRequest request) {
         log.debug("REST request to check if the current user is authenticated");
         return request.getRemoteUser();
@@ -101,9 +111,9 @@ public class AccountResource {
     */
     @GetMapping("/account")
     @Timed
-    public UserDTO getAccount() {
+    @ApiOperation(value = "获取当前登录用户信息", notes = "获取当前登录用户信息。")
+    public User getAccount() {
         return Optional.ofNullable(userService.getUserWithAuthorities())
-            .map(UserDTO::new)
             .orElseThrow(() -> new InternalServerErrorException("User could not be found"));
     }
 
@@ -116,18 +126,15 @@ public class AccountResource {
     */
     @PostMapping("/account")
     @Timed
-    public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
+    @ApiOperation(value = "更新当前登录用户信息", notes = "更新当前登录用户信息。")
+    public void saveAccount(@Valid @RequestBody User user) {
         final String userLogin = SecurityUtils.getCurrentUserLogin();
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
-            throw new EmailAlreadyUsedException();
-        }
-        Optional<User> user = userRepository.findOneByLogin(userLogin);
-        if (!user.isPresent()) {
+        Optional<User> user1 = userService.findeUserByName(userLogin);
+        if (!user1.isPresent()) {
             throw new InternalServerErrorException("User could not be found");
         }
-        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(),
-            userDTO.getLangKey(), userDTO.getImageUrl());
+        userService.updateUser(user.getName_cn(), user.getPhone(), user.getEmail(),
+        		user.getSex(), user.getHead_image());
    }
 
     /**
@@ -138,6 +145,7 @@ public class AccountResource {
     */
     @PostMapping(path = "/account/change-password")
     @Timed
+    @ApiOperation(value = "更改当前登录用户的密码", notes = "更改当前登录用户的密码。")
     public void changePassword(@RequestBody String password) {
         if (!checkPasswordLength(password)) {
             throw new InvalidPasswordException();
@@ -151,14 +159,14 @@ public class AccountResource {
     * @param mail the mail of the user
     * @throws EmailNotFoundException 400 (Bad Request) if the email address is not registered
     */
-    @PostMapping(path = "/account/reset-password/init")
-    @Timed
-    public void requestPasswordReset(@RequestBody String mail) {
-       mailService.sendPasswordResetMail(
-           userService.requestPasswordReset(mail)
-               .orElseThrow(EmailNotFoundException::new)
-       );
-    }
+//    @PostMapping(path = "/account/reset-password/init")
+//    @Timed
+//    public void requestPasswordReset(@RequestBody String mail) {
+//       mailService.sendPasswordResetMail(
+//           usersService.requestPasswordReset(mail)
+//               .orElseThrow(EmailNotFoundException::new)
+//       );
+//    }
 
     /**
     * POST   /account/reset-password/finish : Finish to reset the password of the user
@@ -169,12 +177,13 @@ public class AccountResource {
     */
     @PostMapping(path = "/account/reset-password/finish")
     @Timed
-    public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
-        if (!checkPasswordLength(keyAndPassword.getNewPassword())) {
+    @ApiOperation(value = "更改用户的密码", notes = "更改用户的密码。")
+    public void finishPasswordReset(@RequestBody UsernameAndPasswordVM usernameAndPassword) {
+        if (!checkPasswordLength(usernameAndPassword.getNewPassword())) {
             throw new InvalidPasswordException();
         }
         Optional<User> user =
-            userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
+            userService.completePasswordReset(usernameAndPassword.getNewPassword(), usernameAndPassword.getUsername());
 
         if (!user.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
@@ -183,7 +192,7 @@ public class AccountResource {
 
     private static boolean checkPasswordLength(String password) {
         return !StringUtils.isEmpty(password) &&
-            password.length() >= ManagedUserVM.PASSWORD_MIN_LENGTH &&
-            password.length() <= ManagedUserVM.PASSWORD_MAX_LENGTH;
+            password.length() >= 4 &&
+            password.length() <= 100;
     }
 }

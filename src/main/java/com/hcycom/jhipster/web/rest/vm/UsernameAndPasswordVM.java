@@ -3,21 +3,23 @@ package com.hcycom.jhipster.web.rest.vm;
 /**
  * View Model object for storing the user's key and password.
  */
-public class KeyAndPasswordVM {
+public class UsernameAndPasswordVM {
 
-    private String key;
+    private String username;
 
     private String newPassword;
 
-    public String getKey() {
-        return key;
-    }
+   
 
-    public void setKey(String key) {
-        this.key = key;
-    }
+    public String getUsername() {
+		return username;
+	}
 
-    public String getNewPassword() {
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getNewPassword() {
         return newPassword;
     }
 
