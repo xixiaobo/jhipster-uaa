@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -72,7 +73,7 @@ public class UserService {
 	 * @return
 	 */
 	public Optional<User> findeUserByName(String username) {
-		User user = new User();
+		User user = null;
 		Resource resource = resourceMapper.findResoureBySave_table("user");
 		List<Attribute_values> list = attribute_valuesMapper.findUserByName(resource.getResource_name(), username);
 		Map map = new HashMap();
@@ -80,7 +81,9 @@ public class UserService {
 			map.put(attribute_values.getAttribute_key(), attribute_values.getValue());
 		}
 		JSONObject json = JSONObject.fromObject(map);
-		user = (User) JSONObject.toBean(json, User.class);
+		if (list.size()>0) {
+			user = (User) JSONObject.toBean(json, User.class);
+		}
 		Optional<User> optional = Optional.ofNullable(user);
 		return optional;
 	}
@@ -179,17 +182,17 @@ public class UserService {
 		String encryptedPassword = passwordEncoder.encode(user.getPassword());
 		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
 		Set<String> set = user.getAuthorities();
-		List<Integer> list=new ArrayList<Integer>();
+		List<Integer> list = new ArrayList<Integer>();
 		for (String string : set) {
-			Role role=new Role();
-			role=roleMapper.getRoleByRole_name(string);
+			Role role = new Role();
+			role = roleMapper.getRoleByRole_name(string);
 			list.add(role.getUuid());
 		}
 		String roles = "";
 		for (int string : list) {
-			roles+=string+",";
+			roles += string + ",";
 		}
-		roles=roles.substring(0,roles.length()-1);
+		roles = roles.substring(0, roles.length() - 1);
 		user.setRoles(roles);
 		user.setId(uuid);
 		user.setStatus(0);
@@ -203,7 +206,7 @@ public class UserService {
 			attribute_values.setUuid(uuid);
 			attribute_values.setResource_name(resource.getResource_name());
 			attribute_values.setAttribute_key(attribute2.getAttribute_key());
-			attribute_values.setValue((String) map.get(attribute2.getAttribute_key()));
+			attribute_values.setValue(map.get(attribute2.getAttribute_key())+"");
 			attribute_valuesMapper.addAttribute_values(attribute_values);
 		}
 
@@ -221,17 +224,17 @@ public class UserService {
 		String encryptedPassword = passwordEncoder.encode(user.getPassword());
 		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
 		Set<String> set = user.getAuthorities();
-		List<Integer> list=new ArrayList<Integer>();
+		List<Integer> list = new ArrayList<Integer>();
 		for (String string : set) {
-			Role role=new Role();
-			role=roleMapper.getRoleByRole_name(string);
+			Role role = new Role();
+			role = roleMapper.getRoleByRole_name(string);
 			list.add(role.getUuid());
 		}
 		String roles = "";
 		for (int string : list) {
-			roles+=string+",";
+			roles += string + ",";
 		}
-		roles=roles.substring(0,roles.length()-1);
+		roles = roles.substring(0, roles.length() - 1);
 		user.setRoles(roles);
 		user.setId(uuid);
 		user.setStatus(1);
@@ -245,7 +248,7 @@ public class UserService {
 			attribute_values.setUuid(uuid);
 			attribute_values.setResource_name(resource.getResource_name());
 			attribute_values.setAttribute_key(attribute2.getAttribute_key());
-			attribute_values.setValue((String) map.get(attribute2.getAttribute_key()));
+			attribute_values.setValue(map.get(attribute2.getAttribute_key())+"");
 			attribute_valuesMapper.addAttribute_values(attribute_values);
 		}
 		log.debug("Created Information for User: {}", user);
@@ -266,7 +269,7 @@ public class UserService {
 	 * @param imageUrl
 	 *            image URL of user
 	 */
-	public void updateUser(String name_cn, String phone, String sex, String head_image, String email) {
+	public void updateUser(String name_cn, String phone, String email) {
 		User user = new User();
 		Resource resource = resourceMapper.findResoureBySave_table("user");
 		List<Attribute_values> list = attribute_valuesMapper.findUserByName(resource.getResource_name(),
@@ -279,8 +282,6 @@ public class UserService {
 		user = (User) JSONObject.toBean(json, User.class);
 		user.setName_cn(name_cn);
 		user.setPhone(phone);
-		user.setHead_image(head_image);
-		user.setSex(sex);
 		user.setEmail(email);
 		Map<String, Object> usermap = BeanMap(user);
 		Attribute attribute = new Attribute();
@@ -291,7 +292,7 @@ public class UserService {
 			attribute_values.setUuid(user.getId());
 			attribute_values.setResource_name(resource.getResource_name());
 			attribute_values.setAttribute_key(attribute2.getAttribute_key());
-			attribute_values.setValue((String) usermap.get(attribute2.getAttribute_key()));
+			attribute_values.setValue(usermap.get(attribute2.getAttribute_key())+"");
 			attribute_valuesMapper.updateAttribute_values(attribute_values);
 		}
 
@@ -306,6 +307,19 @@ public class UserService {
 	 */
 	public Optional<User> updateUser(User user) {
 		Resource resource = resourceMapper.findResoureBySave_table("user");
+		Set<String> set = user.getAuthorities();
+		List<Integer> list = new ArrayList<Integer>();
+		for (String string : set) {
+			Role role = new Role();
+			role = roleMapper.getRoleByRole_name(string);
+			list.add(role.getUuid());
+		}
+		String roles = "";
+		for (int string : list) {
+			roles += string + ",";
+		}
+		roles = roles.substring(0, roles.length() - 1);
+		user.setRoles(roles);
 		Map<String, Object> usermap = BeanMap(user);
 		Attribute attribute = new Attribute();
 		attribute.setResource_name_foreign(resource.getResource_name());
@@ -315,7 +329,7 @@ public class UserService {
 			attribute_values.setUuid(user.getId());
 			attribute_values.setResource_name(resource.getResource_name());
 			attribute_values.setAttribute_key(attribute2.getAttribute_key());
-			attribute_values.setValue((String) usermap.get(attribute2.getAttribute_key()));
+			attribute_values.setValue(usermap.get(attribute2.getAttribute_key())+"");
 			attribute_valuesMapper.updateAttribute_values(attribute_values);
 		}
 
@@ -370,27 +384,38 @@ public class UserService {
 		attribute_valuesMapper.updateAttribute_values(attribute_values);
 	}
 
-	 @Transactional(readOnly = true)
-	 public Page<User> getAllManagedUsers(Pageable pageable) {
-		 List<User> users=new ArrayList<User>();
-			Resource resource = resourceMapper.findResoureBySave_table("user");
-			Attribute_values attribute_values=new Attribute_values();
-			attribute_values.setResource_name(resource.getResource_name());
-			List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByPage(pageable, resource.getResource_name());
-			Map map = new HashMap();
-			log.debug("alluser:"+list);
-			for (Attribute_values values : list) {
-					attribute_values.setUuid(values.getValue());
-					List<Attribute_values> list2 = attribute_valuesMapper.findAttribute_valuesByResource_nameANDUuid(attribute_values);
-					for (Attribute_values attribute_values2 : list2) {
-						map.put(attribute_values2.getAttribute_key(), attribute_values2.getValue());
-					}
-					JSONObject json = JSONObject.fromObject(map);
-					User user = (User) JSONObject.toBean(json, User.class);
-					users.add(user);
+	@Transactional(readOnly = true)
+	public Page<User> getAllManagedUsers(Pageable pageable) {
+
+		List<User> users = new ArrayList<User>();
+		Resource resource = resourceMapper.findResoureBySave_table("user");
+		Attribute_values attribute_values = new Attribute_values();
+		attribute_values.setResource_name(resource.getResource_name());
+		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByPage(pageable,
+				resource.getResource_name());
+		Map map = new HashMap();
+		log.debug("alluser:" + list);
+		for (Attribute_values values : list) {
+			attribute_values.setUuid(values.getValue());
+			List<Attribute_values> list2 = attribute_valuesMapper
+					.findAttribute_valuesByResource_nameANDUuid(attribute_values);
+			for (Attribute_values attribute_values2 : list2) {
+				map.put(attribute_values2.getAttribute_key(), attribute_values2.getValue());
 			}
-			return (Page<User>) users;
-	 }
+			JSONObject json = JSONObject.fromObject(map);
+			User user = (User) JSONObject.toBean(json, User.class);
+			Set<String> authorities = new HashSet<>();
+			String[] rolesids = user.getRoles().split(",");
+			for (String rolesid : rolesids) {
+				authorities.add(roleMapper.getUsersAuthority(rolesid).getRole_name());
+			}
+			user.setLogin(user.getUsername());
+			user.setAuthorities(authorities);
+			users.add(user);
+		}
+
+		return new PageImpl<User>(users);
+	}
 
 	@Transactional(readOnly = true)
 	public Optional<User> getUserWithAuthoritiesByLogin(String login) {
@@ -485,20 +510,20 @@ public class UserService {
 	public List<String> getAuthorities() {
 		return roleMapper.getAllAuthority().stream().map(Role::getRole_name).collect(Collectors.toList());
 	}
-	
-	
-	public List<User> getAlluser(){
-		List<User> users=new ArrayList<User>();
+
+	public List<User> getAlluser() {
+		List<User> users = new ArrayList<User>();
 		Resource resource = resourceMapper.findResoureBySave_table("user");
-		Attribute_values attribute_values=new Attribute_values();
+		Attribute_values attribute_values = new Attribute_values();
 		attribute_values.setResource_name(resource.getResource_name());
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_name(attribute_values);
 		Map map = new HashMap();
-		log.debug("alluser:"+list);
+		log.debug("alluser:" + list);
 		for (Attribute_values values : list) {
-			if(values.getAttribute_key().equals("id")){
+			if (values.getAttribute_key().equals("id")) {
 				attribute_values.setUuid(values.getValue());
-				List<Attribute_values> list2 = attribute_valuesMapper.findAttribute_valuesByResource_nameANDUuid(attribute_values);
+				List<Attribute_values> list2 = attribute_valuesMapper
+						.findAttribute_valuesByResource_nameANDUuid(attribute_values);
 				for (Attribute_values attribute_values2 : list2) {
 					map.put(attribute_values2.getAttribute_key(), attribute_values2.getValue());
 				}

@@ -113,7 +113,8 @@ public class UserResource {
 		if (userService.findeUserByName(user.getUsername().toLowerCase()).isPresent()) {
 			throw new LoginAlreadyUsedException();
 		} else {
-			User newUser = userService.registerUser(user);
+			user.setPassword("hcy123");
+			User newUser = userService.createUser(user);
 			return ResponseEntity.created(new URI("/api/users/" + newUser.getUsername()))
 					.headers(HeaderUtil.createAlert("userManagement.created", newUser.getUsername())).body(newUser);
 		}
