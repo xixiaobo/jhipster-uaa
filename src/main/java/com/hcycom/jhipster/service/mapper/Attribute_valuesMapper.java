@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.springframework.data.domain.Pageable;
 
 import com.hcycom.jhipster.domain.Attribute_values;
 
@@ -70,6 +71,19 @@ public interface Attribute_valuesMapper {
 	@Select("select * from attribute_values WHERE resource_name=#{attribute_values.resource_name}")
 	public List<Attribute_values> findAttribute_valuesByResource_name(
 			@Param("attribute_values") Attribute_values attribute_values);
+	
+
+	/**
+	 * 根据资源名查询资源属性返回该资源的所有属性值
+	 * 
+	 * @param attribute
+	 * @return
+	 */
+	@Select("select * from attribute_values "
+			+ "WHERE resource_name=#{resource_name} and attribute_key = 'id' "
+			+ "limit ${pageable.offset}, ${pageable.pageSize}")
+	public List<Attribute_values> findAttribute_valuesByPage(
+			@Param("pageable") Pageable pageable,@Param("resource_name")String resource_name);
 
 	/**
 	 * 根据用户名查找用户

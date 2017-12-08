@@ -64,23 +64,6 @@ public class UserService {
 	private RoleMapper roleMapper;
 
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-	//
-	// private final PasswordEncoder passwordEncoder;
-
-	// public UserService(RoleMapper roleMapper, ResourceMapper resourceMapper,
-	// AttributeMapper attributeMapper,
-	// Attribute_valuesMapper attribute_valuesMapper, PasswordEncoder
-	// passwordEncoder) {
-	// this.attribute_valuesMapper = attribute_valuesMapper;
-	// this.attributeMapper = attributeMapper;
-	// this.resourceMapper = resourceMapper;
-	// this.roleMapper = roleMapper;
-	// this.passwordEncoder = passwordEncoder;
-	// }
-
-	// public UserService(PasswordEncoder passwordEncoder) {
-	// this.passwordEncoder = passwordEncoder;
-	// }
 
 	/**
 	 * 根据登录名找到用户信息
@@ -387,11 +370,27 @@ public class UserService {
 		attribute_valuesMapper.updateAttribute_values(attribute_values);
 	}
 
-	// @Transactional(readOnly = true)
-	// public Page<User> getAllManagedUsers(Pageable pageable) {
-	// return userRepository.findAllByLoginNot(pageable,
-	// Constants.ANONYMOUS_USER).map(UserDTO::new);
-	// }
+	 @Transactional(readOnly = true)
+	 public Page<User> getAllManagedUsers(Pageable pageable) {
+		 List<User> users=new ArrayList<User>();
+			Resource resource = resourceMapper.findResoureBySave_table("user");
+			Attribute_values attribute_values=new Attribute_values();
+			attribute_values.setResource_name(resource.getResource_name());
+			List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByPage(pageable, resource.getResource_name());
+			Map map = new HashMap();
+			log.debug("alluser:"+list);
+			for (Attribute_values values : list) {
+					attribute_values.setUuid(values.getValue());
+					List<Attribute_values> list2 = attribute_valuesMapper.findAttribute_valuesByResource_nameANDUuid(attribute_values);
+					for (Attribute_values attribute_values2 : list2) {
+						map.put(attribute_values2.getAttribute_key(), attribute_values2.getValue());
+					}
+					JSONObject json = JSONObject.fromObject(map);
+					User user = (User) JSONObject.toBean(json, User.class);
+					users.add(user);
+			}
+			return (Page<User>) users;
+	 }
 
 	@Transactional(readOnly = true)
 	public Optional<User> getUserWithAuthoritiesByLogin(String login) {
