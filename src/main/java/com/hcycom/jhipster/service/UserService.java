@@ -195,6 +195,7 @@ public class UserService {
 		roles = roles.substring(0, roles.length() - 1);
 		user.setRoles(roles);
 		user.setId(uuid);
+		user.setPassword(encryptedPassword);
 		user.setStatus(0);
 		Map<String, Object> map = BeanMap(user);
 		Resource resource = resourceMapper.findResoureBySave_table("user");
@@ -237,6 +238,7 @@ public class UserService {
 		roles = roles.substring(0, roles.length() - 1);
 		user.setRoles(roles);
 		user.setId(uuid);
+		user.setPassword(encryptedPassword);
 		user.setStatus(1);
 		Map<String, Object> map = BeanMap(user);
 		Resource resource = resourceMapper.findResoureBySave_table("user");
