@@ -173,7 +173,7 @@ public class UserService {
 	//
 
 	/**
-	 * 登记用户
+	 * 登记用户,默认不激活
 	 * 
 	 * @param userDTO
 	 * @return
@@ -216,7 +216,7 @@ public class UserService {
 	}
 
 	/**
-	 * 创建用户
+	 * 创建用户，默认激活
 	 * 
 	 * @param userDTO
 	 * @return
@@ -359,6 +359,18 @@ public class UserService {
 		attribute_values.setUuid(user.getId());
 		attribute_valuesMapper.deleteAttribute_values(attribute_values);
 	}
+	
+	/**
+	 * 根据id删除用户
+	 * @param id
+	 */
+	public void deleteUserById(String id) {
+		Resource resource = resourceMapper.findResoureBySave_table("user");
+		Attribute_values attribute_values = new Attribute_values();
+		attribute_values.setResource_name(resource.getResource_name());
+		attribute_values.setUuid(id);
+		attribute_valuesMapper.deleteAttribute_values(attribute_values);
+	}
 
 	/**
 	 * 修改密码
@@ -386,6 +398,11 @@ public class UserService {
 		attribute_valuesMapper.updateAttribute_values(attribute_values);
 	}
 
+	/**
+	 * 分页获得所有用户
+	 * @param pageable
+	 * @return
+	 */
 	@Transactional(readOnly = true)
 	public Page<User> getAllManagedUsers(Pageable pageable) {
 
@@ -419,6 +436,11 @@ public class UserService {
 		return new PageImpl<User>(users);
 	}
 
+	/**
+	 * 通过用户名获得用户所有信息包括权限
+	 * @param login
+	 * @return
+	 */
 	@Transactional(readOnly = true)
 	public Optional<User> getUserWithAuthoritiesByLogin(String login) {
 		User user = new User();
@@ -441,7 +463,43 @@ public class UserService {
 		Optional<User> optional = Optional.ofNullable(user);
 		return optional;
 	}
+	
+	/**
+	 * 通过用户id获得用户所有信息包括权限
+	 * @param login
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public Optional<User> getUserWithAuthoritiesById(String id) {
+		User user = new User();
+		Resource resource = resourceMapper.findResoureBySave_table("user");
+		Attribute_values attribute_values=new Attribute_values();
+		attribute_values.setResource_name(resource.getResource_name());
+		attribute_values.setUuid(id);
+		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_nameANDUuid(attribute_values);
+		Map map = new HashMap();
+		for (Attribute_values attribute_values2 : list) {
+			map.put(attribute_values2.getAttribute_key(), attribute_values2.getValue());
+		}
+		JSONObject json = JSONObject.fromObject(map);
+		user = (User) JSONObject.toBean(json, User.class);
+		Set<String> authorities = new HashSet<>();
+		String[] rolesids = user.getRoles().split(",");
+		for (String rolesid : rolesids) {
+			authorities.add(roleMapper.getUsersAuthority(rolesid).getRole_name());
+		}
+		user.setLogin(user.getUsername());
+		user.setAuthorities(authorities);
 
+		Optional<User> optional = Optional.ofNullable(user);
+		return optional;
+	}
+
+	/**
+	 * 根据id获取用户所有权限
+	 * @param id
+	 * @return
+	 */
 	@Transactional(readOnly = true)
 	public User getUserWithAuthorities(String id) {
 		User user = new User();
@@ -466,6 +524,10 @@ public class UserService {
 		return user;
 	}
 
+	/**
+	 * 获取当前登录用户所有信息包括权限
+	 * @return
+	 */
 	@Transactional(readOnly = true)
 	public User getUserWithAuthorities() {
 		User user = new User();
@@ -531,6 +593,13 @@ public class UserService {
 				}
 				JSONObject json = JSONObject.fromObject(map);
 				User user = (User) JSONObject.toBean(json, User.class);
+				Set<String> authorities = new HashSet<>();
+				String[] rolesids = user.getRoles().split(",");
+				for (String rolesid : rolesids) {
+					authorities.add(roleMapper.getUsersAuthority(rolesid).getRole_name());
+				}
+				user.setLogin(user.getUsername());
+				user.setAuthorities(authorities);
 				users.add(user);
 			}
 		}

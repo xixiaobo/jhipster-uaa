@@ -1,0 +1,12 @@
+﻿attribute_key;attribute_name;attribute_type;format_str;is_delete;is_enable;attribute_status;order;resource_name_foreign
+email;邮箱;string;;1;0;0;5;user
+groups;群组;string; ;1;0;0;8;user
+head_image;头像;string; ;1;0;0;4;user
+id;用户id;string;  ;1;0;0;0;user
+name_cn;中文名;string; ;1;0;0;2;user
+password;密码;string; ;1;0;0;3;user
+phone;电话;string; ;1;0;0;6;user
+roles;角色;string; ;1;0;0;9;user
+sex;性别;string; ;1;0;0;7;user
+status;状态;int; ;1;0;0;8;user
+username;用户名称;string; ;1;0;0;1;user

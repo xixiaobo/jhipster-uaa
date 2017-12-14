@@ -1,59 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
-<databaseChangeLog
-    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <property name="now" value="now()" dbms="h2"/>
-    <property name="now" value="now()" dbms="mysql"/>
-    <property name="autoIncrement" value="true"/>
+	<property name="now" value="now()" dbms="h2" />
+	<property name="now" value="now()" dbms="mysql" />
+	<property name="autoIncrement" value="true" />
 
-    <!--
-        JHipster core tables.
-        The initial schema has the '00000000000001' id, so that it is over-written if we re-generate it.
-    -->
-    <changeSet id="00000000000001" author="jhipster">
-        <createTable tableName="jhi_persistent_audit_event">
-            <column name="event_id" type="bigint" autoIncrement="${autoIncrement}">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="principal" type="varchar(50)">
-                <constraints nullable="false" />
-            </column>
-            <column name="event_date" type="timestamp"/>
-            <column name="event_type" type="varchar(255)"/>
-        </createTable>
+	<!-- JHipster core tables. The initial schema has the '00000000000001' id, 
+		so that it is over-written if we re-generate it. -->
+	<changeSet id="00000000000001" author="jhipster">
+		<createTable tableName="resource">
+			<column name="resource_name" type="varchar(45)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="visible_name" type="varchar(128)">
+				<constraints nullable="false" />
+			</column>
+			<column name="resource_desc" type="varchar(128)">
+				<constraints nullable="false" />
+			</column>
+			<column name="is_delete" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="save_table" type="varchar(45)">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
 
-        <createTable tableName="jhi_persistent_audit_evt_data">
-            <column name="event_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-            <column name="name" type="varchar(150)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="value" type="varchar(255)"/>
-        </createTable>
-        <addPrimaryKey columnNames="event_id, name" tableName="jhi_persistent_audit_evt_data"/>
+		<createTable tableName="attribute">
+			<column name="attribute_key" type="varchar(45)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="attribute_name" type="varchar(45)">
+				<constraints nullable="false" />
+			</column>
+			<column name="attribute_type" type="varchar(128)">
+				<constraints nullable="false" />
+			</column>
+			<column name="format_str" type="varchar(128)">
+				<constraints nullable="false" />
+			</column>
+			<column name="is_delete" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="is_enable" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="attribute_status" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="order" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="resource_name_foreign" type="varchar(45)">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+		
+		<createTable tableName="attribute_values">
+			<column name="uuid" type="varchar(45)">
+				<constraints nullable="false" />
+			</column>
+			<column name="resource_name" type="varchar(45)">
+				<constraints nullable="false" />
+			</column>
+			<column name="attribute_key" type="varchar(45)">
+				<constraints nullable="false" />
+			</column>
+			<column name="value" type="varchar(128)">
+			</column>
+		</createTable>
+		
+		<createTable tableName="role">
+			<column name="uuid" type="varchar(45)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="role_name" type="varchar(45)">
+				<constraints nullable="false" />
+			</column>
+			<column name="role_desc" type="varchar(128)">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+		
 
-        <createIndex indexName="idx_persistent_audit_event"
-                     tableName="jhi_persistent_audit_event"
-                     unique="false">
-            <column name="principal" type="varchar(50)"/>
-            <column name="event_date" type="timestamp"/>
-        </createIndex>
+		<createTable tableName="jhi_persistent_audit_event">
+			<column name="event_id" type="bigint" autoIncrement="${autoIncrement}">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="principal" type="varchar(50)">
+				<constraints nullable="false" />
+			</column>
+			<column name="event_date" type="timestamp" />
+			<column name="event_type" type="varchar(255)" />
+		</createTable>
 
-        <createIndex indexName="idx_persistent_audit_evt_data"
-                     tableName="jhi_persistent_audit_evt_data"
-                     unique="false">
-            <column name="event_id" type="bigint"/>
-        </createIndex>
+		<createTable tableName="jhi_persistent_audit_evt_data">
+			<column name="event_id" type="bigint">
+				<constraints nullable="false" />
+			</column>
+			<column name="name" type="varchar(150)">
+				<constraints nullable="false" />
+			</column>
+			<column name="value" type="varchar(255)" />
+		</createTable>
+		<addPrimaryKey columnNames="event_id, name"
+			tableName="jhi_persistent_audit_evt_data" />
 
-        <addForeignKeyConstraint baseColumnNames="event_id"
-                                 baseTableName="jhi_persistent_audit_evt_data"
-                                 constraintName="fk_evt_pers_audit_evt_data"
-                                 referencedColumnNames="event_id"
-                                 referencedTableName="jhi_persistent_audit_event"/>
-    </changeSet>
+		<createIndex indexName="idx_persistent_audit_event"
+			tableName="jhi_persistent_audit_event" unique="false">
+			<column name="principal" type="varchar(50)" />
+			<column name="event_date" type="timestamp" />
+		</createIndex>
+
+		<createIndex indexName="idx_persistent_audit_evt_data"
+			tableName="jhi_persistent_audit_evt_data" unique="false">
+			<column name="event_id" type="bigint" />
+		</createIndex>
+
+		<addForeignKeyConstraint baseColumnNames="event_id"
+			baseTableName="jhi_persistent_audit_evt_data" constraintName="fk_evt_pers_audit_evt_data"
+			referencedColumnNames="event_id" referencedTableName="jhi_persistent_audit_event" />
+
+		<loadData encoding="UTF-8" file="config/liquibase/resource.csv"
+			separator=";" tableName="resource">
+		</loadData>
+		<loadData encoding="UTF-8" file="config/liquibase/attribute.csv"
+			separator=";" tableName="attribute">
+		</loadData>
+		<loadData encoding="UTF-8" file="config/liquibase/attribute_values.csv"
+			separator=";" tableName="attribute_values">
+		</loadData>
+		<loadData encoding="UTF-8" file="config/liquibase/role.csv"
+			separator=";" tableName="role">
+		</loadData>
+
+
+	</changeSet>
 </databaseChangeLog>

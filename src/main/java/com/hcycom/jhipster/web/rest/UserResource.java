@@ -2,6 +2,7 @@ package com.hcycom.jhipster.web.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -106,14 +108,18 @@ public class UserResource {
 	@PostMapping("/users")
 	@Timed
 	@Secured(AuthoritiesConstants.ADMIN)
-	@ApiOperation(value = "新增用户", notes = "新增用户以经激活")
+	@ApiOperation(value = "新增用户", notes = "新增用户已经激活", httpMethod = "POST")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users_post')")
+	@ApiParam(required = true, name = "username,sex,phone,password,name_cn,head_image,email,authorities", value = "需要传入的这些值,其他值为空，authorities为角色名称数组")
 	public ResponseEntity<User> createUser(@Valid @RequestBody User user) throws URISyntaxException {
 		log.debug("REST request to save User : {}", user);
 
 		if (userService.findeUserByName(user.getUsername().toLowerCase()).isPresent()) {
 			throw new LoginAlreadyUsedException();
 		} else {
-			user.setPassword("hcy123");
+			if (user.getPassword() == null || user.getPassword().equals("")) {
+				user.setPassword("hcy123");
+			}
 			User newUser = userService.createUser(user);
 			return ResponseEntity.created(new URI("/api/users/" + newUser.getUsername()))
 					.headers(HeaderUtil.createAlert("userManagement.created", newUser.getUsername())).body(newUser);
@@ -135,7 +141,9 @@ public class UserResource {
 	@PutMapping("/users")
 	@Timed
 	@Secured(AuthoritiesConstants.ADMIN)
-	@ApiOperation(value = "修改用户", notes = "修改用户")
+	@ApiOperation(value = "修改用户", notes = "修改用户所有信息", httpMethod = "PUT")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users_PUT')")
+	@ApiParam(required = true, name = "username,sex,phone,password,name_cn,head_image,email,authorities", value = "需要传入的这些值,其他值为空，authorities为角色名称数组")
 	public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
 		log.debug("REST request to update User : {}", user);
 		Optional<User> updatedUser;
@@ -149,6 +157,7 @@ public class UserResource {
 		return ResponseUtil.wrapOrNotFound(updatedUser,
 				HeaderUtil.createAlert("userManagement.updated", user.getUsername()));
 	}
+
 	/**
 	 * GET /users : get all users.
 	 *
@@ -156,23 +165,23 @@ public class UserResource {
 	 *            the pagination information
 	 * @return the ResponseEntity with status 200 (OK) and with body all users
 	 */
-	 @GetMapping("/users")
-	 @Timed
-	 public ResponseEntity<List<User>> getAllUsers(@ApiParam Pageable
-	 pageable) {
-	 final Page<User> page = userService.getAllManagedUsers(pageable);
-	 HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page,
-	 "/api/users");
-	 return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
-	 }
+	@GetMapping("/users")
+	@Timed
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users_GET')")
+	@ApiOperation(value = "分页获取用户", httpMethod = "GET", notes = "通过分页值获取用户")
+	public ResponseEntity<List<User>> getAllUsers(@ApiParam Pageable pageable) {
+		final Page<User> page = userService.getAllManagedUsers(pageable);
+		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/users");
+		return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+	}
 
 	/**
 	 * @return a string list of the all of the roles
 	 */
 	@GetMapping("/users/authorities")
 	@Timed
-	@Secured(AuthoritiesConstants.ADMIN)
-	@ApiOperation(value = "获取角色名称", notes = "获取所有的角色名称")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/authorities')")
+	@ApiOperation(value = "获取角色名称", httpMethod = "GET", notes = "获取所有的角色名称")
 	public List<String> getAuthorities() {
 		return userService.getAuthorities();
 	}
@@ -187,7 +196,9 @@ public class UserResource {
 	 */
 	@GetMapping("/users/{login:" + Constants.LOGIN_REGEX + "}")
 	@Timed
-	@ApiOperation(value = "获取用户", notes = "获取用户所有信息")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/{login}_GET')")
+	@ApiOperation(value = "获取用户", httpMethod = "GET", notes = "获取用户所有信息，login为用户名称")
+	@ApiParam(name = "login", value = "参数类型为String,是用户的名称", required = true)
 	public ResponseEntity<User> getUser(@PathVariable String login) {
 		log.debug("REST request to get User : {}", login);
 		return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesByLogin(login));
@@ -203,36 +214,67 @@ public class UserResource {
 	@DeleteMapping("/users/{login:" + Constants.LOGIN_REGEX + "}")
 	@Timed
 	@Secured(AuthoritiesConstants.ADMIN)
-	@ApiOperation(value = "删除用户", notes = "删除用户所有信息")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/{login}_DELETE')")
+	@ApiOperation(value = "删除用户，根据用户名", httpMethod = "DELETE", notes = "删除用户所有信息，login为用户名称")
+	@ApiParam(name = "login", value = "参数类型为String,是用户的名称", required = true)
 	public ResponseEntity<Void> deleteUser(@PathVariable String login) {
 		log.debug("REST request to delete User: {}", login);
 		userService.deleteUser(login);
 		return ResponseEntity.ok().headers(HeaderUtil.createAlert("userManagement.deleted", login)).build();
 	}
-	
+
+	@DeleteMapping("/users/{id}")
+	@Timed
+	@Secured(AuthoritiesConstants.ADMIN)
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/{id}_DELETE')")
+	@ApiOperation(value = "删除用户，根据用户id", notes = "删除用户所有信息，根据用户的id", httpMethod = "DELETE")
+	@ApiParam(name = "id", value = "参数类型为String,为用户的id", required = true)
+	public ResponseEntity<Void> deleteUserByid(@PathVariable String id) {
+		log.debug("REST request to delete User: {}", id);
+		User user = userService.getUserWithAuthoritiesById(id).orElse(null);
+		userService.deleteUserById(id);
+		return ResponseEntity.ok().headers(HeaderUtil.createAlert("userManagement.deleted", user.getUsername()))
+				.build();
+	}
+
+	@DeleteMapping("/usersByMore")
+	@Timed
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/usersByMore')")
+	@ApiOperation(value = "删除多个用户", httpMethod = "DELETE", notes = "删除多个用户根据id数组")
+	@ApiParam(name = "ids", value = "参数类型为String[],为用户id的数组", required = true)
+	public ResponseEntity<Void> deleteUserByMore(@RequestBody String[] ids) {
+		List<String> usernames = new ArrayList<String>();
+		for (String id : ids) {
+			User user = userService.getUserWithAuthoritiesById(id).orElse(null);
+			usernames.add(user.getUsername());
+			userService.deleteUserById(id);
+		}
+
+		return ResponseEntity.ok().headers(HeaderUtil.createAlert("userManagement.deleted", usernames.toString()))
+				.build();
+	}
+
 	/**
-	 * DELETE /users/:login : delete the "login" User.
-	 *
-	 * @param login
-	 *            the login of the user to delete
-	 * @return the ResponseEntity with status 200 (OK)
+	 * 获取所有用户
+	 * 
+	 * @return
 	 */
 	@GetMapping("/allusers")
 	@Timed
-	@Secured(AuthoritiesConstants.ADMIN)
-	@ApiOperation(value = "获取所有用户", notes = "获取所有用户所有信息")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/allusers')")
+	@ApiOperation(value = "获取所有用户", notes = "获取所有用户所有信息", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getAllUser() {
-		Map<String, Object> map =new HashMap<String, Object>();
-		List<User> list=userService.getAlluser();
-		if(list.size()>0){
+		Map<String, Object> map = new HashMap<String, Object>();
+		List<User> list = userService.getAlluser();
+		if (list.size() > 0) {
 			map.put("allUser", list);
 			map.put("msg", "成功获取所有用户！");
 			map.put("error_code", 1);
-		}else {
+		} else {
 			map.put("msg", "获取所有用户失败或所有用户为空！");
 			map.put("error_code", 1);
 		}
-		
+
 		return new ResponseEntity<Map<String, Object>>(map, HttpStatus.OK);
 	}
 }

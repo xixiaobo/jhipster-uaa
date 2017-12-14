@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,7 @@ import com.hcycom.jhipster.web.rest.vm.UsernameAndPasswordVM;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
 * REST controller for managing the current user's account.
@@ -62,7 +64,9 @@ public class AccountResource {
     @PostMapping("/register")
     @Timed
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "注册用户", notes = "新增用户未激活")
+    @ApiOperation(value = "注册用户", notes = "新增用户未激活",httpMethod="POST")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/register')")
+    @ApiParam(required=true,name="username,sex,phone,password,name_cn,head_image,email,authorities",value="需要传入的这些值,其他值为空，authorities为角色名称数组")
     public void registerAccount(@Valid @RequestBody User user) {
         if (!checkPasswordLength(user.getPassword())) {
             throw new InvalidPasswordException();
@@ -79,7 +83,9 @@ public class AccountResource {
     */
     @GetMapping("/activate")
     @Timed
-    @ApiOperation(value = "激活用户", notes = "将未激活或用户激活")
+    @ApiOperation(value = "激活用户", notes = "将未激活或用户激活" ,httpMethod="GET")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/activate')")
+    @ApiParam(required=true,name="username",value="传入要激活的用户名")
     public void activateAccount(@RequestParam(value = "username") String username) {
     	User user2=new User();
     	user2.setUsername(username);
@@ -97,7 +103,7 @@ public class AccountResource {
     */
     @GetMapping("/authenticate")
     @Timed
-    @ApiOperation(value = "检测是否有ouath2秘钥", notes = "检查用户是否经过身份验证，并返回其登录。")
+    @ApiOperation(value = "检测是否有ouath2秘钥",httpMethod="GET", notes = "检查用户是否经过身份验证，并返回其登录。")
     public String isAuthenticated(HttpServletRequest request) {
         log.debug("REST request to check if the current user is authenticated");
         return request.getRemoteUser();
@@ -111,7 +117,7 @@ public class AccountResource {
     */
     @GetMapping("/account")
     @Timed
-    @ApiOperation(value = "获取当前登录用户信息", notes = "获取当前登录用户信息。")
+    @ApiOperation(value = "获取当前登录用户信息",httpMethod="GET", notes = "获取当前登录用户信息。")
     public User getAccount() {
         return Optional.ofNullable(userService.getUserWithAuthorities())
             .orElseThrow(() -> new InternalServerErrorException("User could not be found"));
@@ -126,7 +132,8 @@ public class AccountResource {
     */
     @PostMapping("/account")
     @Timed
-    @ApiOperation(value = "更新当前登录用户信息", notes = "更新当前登录用户信息。")
+    @ApiOperation(value = "更新当前登录用户信息",httpMethod="POST", notes = "仅更新当前登录用户基础信息。")
+    @ApiParam(required=true,name="name_cn,phone,email",value="仅修改三个值，其他值为空")
     public void saveAccount(@Valid @RequestBody User user) {
         final String userLogin = SecurityUtils.getCurrentUserLogin();
         Optional<User> user1 = userService.findeUserByName(userLogin);
@@ -144,7 +151,8 @@ public class AccountResource {
     */
     @PostMapping(path = "/account/change-password")
     @Timed
-    @ApiOperation(value = "更改当前登录用户的密码", notes = "更改当前登录用户的密码。")
+    @ApiOperation(value = "更改当前登录用户的密码",httpMethod="POST", notes = "更改当前登录用户的密码。")
+    @ApiParam(required=true,name="password",value="传入新密码直接修改")
     public void changePassword(@RequestBody String password) {
         if (!checkPasswordLength(password)) {
             throw new InvalidPasswordException();
@@ -176,7 +184,9 @@ public class AccountResource {
     */
     @PostMapping(path = "/account/reset-password/finish")
     @Timed
-    @ApiOperation(value = "更改用户的密码", notes = "更改用户的密码。")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/account/reset-password/finish')")
+    @ApiOperation(value = "更改用户的密码",httpMethod="POST", notes = "更改用户的密码。")
+    @ApiParam(required=true,name="username,newPassword",value="修改用户的名称以及新密码，直接修改")
     public void finishPasswordReset(@RequestBody UsernameAndPasswordVM usernameAndPassword) {
         if (!checkPasswordLength(usernameAndPassword.getNewPassword())) {
             throw new InvalidPasswordException();
