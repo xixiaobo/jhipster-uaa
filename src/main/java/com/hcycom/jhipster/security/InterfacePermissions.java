@@ -9,16 +9,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import com.hcycom.jhipster.service.mapper.ProductMapper;
+import com.hcycom.jhipster.service.mapper.InterfacePermissionsMapper;
 
 @Component("InterfacePermissions")
 public class InterfacePermissions {
 	
 	@Autowired
-	private  ProductMapper productMapper;
+	private  InterfacePermissionsMapper interfacePermissionsMapper;
 	
 	public boolean hasPermission(Authentication authentication,String name){
-		List<String> roles=productMapper.getRoleByProduct(name);
+		List<String> roles=interfacePermissionsMapper.getRoleByProduct(name);
 		
 		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
