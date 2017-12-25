@@ -15,7 +15,7 @@ import com.hcycom.jhipster.domain.Group;
 public interface GroupMapper {
 
 	/**
-	 * 添加角色信息
+	 * 添加群组信息
 	 * @param role
 	 * @return
 	 */
@@ -26,7 +26,7 @@ public interface GroupMapper {
 	public int addGroup(@Param("group") Group group);
 
 	/**
-	 * 修改角色信息
+	 * 修改群组信息
 	 * @param role
 	 * @return
 	 */
@@ -37,7 +37,7 @@ public interface GroupMapper {
 	public int updateGroup(@Param("group") Group group);
 
 	/**
-	 * 根据uuid删除角色信息
+	 * 根据uuid删除群组信息
 	 * @param role
 	 * @return
 	 */
@@ -46,7 +46,7 @@ public interface GroupMapper {
 	
 
 	/**
-	 * 根据uuid查询角色信息
+	 * 根据uuid查询群组信息
 	 * @param roleid
 	 * @return
 	 */
@@ -56,7 +56,7 @@ public interface GroupMapper {
 
 
 	/**
-	 * 查询所有角色
+	 * 查询所有群组
 	 * @return
 	 */
 	@Select("select * from group")

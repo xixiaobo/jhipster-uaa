@@ -39,16 +39,24 @@ public interface AttributeMapper {
 	 * @return
 	 */
 	@Delete("DELETE FROM attribute WHERE resource_name=#{attribute.resource_name} "
-			+ "AND attribute_key = #{attribute.attribute_key}")
+			+ "AND attribute_key = #{attribute.attribute_key}  and is_delete=0")
 	public int deleteAttributeByResource_nameAndAttribute_key(@Param("attribute")Attribute attribute);
 	
 	/**
-	 * 删除指定的资源名称下所有资源属性
+	 * 删除指定的资源名称下所有可以删除的资源属性
 	 * @param attribute
 	 * @return
 	 */
-	@Delete("DELETE FROM attribute WHERE resource_name=#{attribute.resource_name}")
-	public int deleteAttributeByResource_name(@Param("attribute")Attribute attribute);
+	@Delete("DELETE FROM attribute WHERE resource_name=#{attribute.resource_name} and is_delete=0 ")
+	public int deleteAttributeByResource_nameLimit(@Param("attribute")Attribute attribute);
+	
+	/**
+	 * 直接删除指定的资源名称下所有资源属性
+	 * @param attribute
+	 * @return
+	 */
+	@Delete("DELETE FROM attribute WHERE resource_name=#{attribute.resource_name} ")
+	public int deleteAttributeByResource_nameNoLimit(@Param("attribute")Attribute attribute);
 	
 	/**
 	 * 修改资源属性
@@ -82,6 +90,14 @@ public interface AttributeMapper {
 	 */
 	@Select("select * from attribute WHERE resource_name_foreign=#{attribute.resource_name_foreign} ORDER BY `order`")
 	public List<Attribute> findAttributeByResource_name(@Param("attribute")Attribute attribute);
+	
+	/**
+	 * 根据资源名查询所有可以删除的属性
+	 * @param attribute
+	 * @return
+	 */
+	@Select("select attribute_key from attribute WHERE resource_name_foreign=#{attribute.resource_name_foreign} and is_delete=0")
+	public List<String> findAttributeByResource_nameNoLimit(@Param("attribute")Attribute attribute);
 	
 	/**
 	 * 查询所有资源

@@ -258,7 +258,9 @@ public class UserResource {
 		for (String string : uuids) {
 			ListID += "\"" + string + "\",";
 		}
+		if(!ListID.equals("")){
 		ListID = ListID.substring(0, ListID.length() - 1);
+		}
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, "user");
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {

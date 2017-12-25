@@ -19,7 +19,7 @@ public interface RoleMapper {
 	 * @param role
 	 * @return
 	 */
-	@Insert("INSERT INTO role VALUES " + "(#{role.uuid},#{role.role_name},#{role.role_desc})")
+	@Insert(value="INSERT INTO role(uuid,role_name,role_desc) VALUES " + "(#{role.uuid},#{role.role_name},#{role.role_desc})")
 	public int addRole(@Param("role") Role role);
 
 	/**
@@ -37,6 +37,14 @@ public interface RoleMapper {
 	 */
 	@Delete("delete from role where uuid=#{role.uuid}")
 	public int deleteRole(@Param("role") Role role);
+	
+	/**
+	 * 根据角色的uuid删除角色的所属权限
+	 * @param role
+	 * @return
+	 */
+	@Delete("delete from role_authority where role_uuid=#{role.uuid}")
+	public int deleteRole_Auth(@Param("role") Role role);
 
 	/**
 	 * 根据uuid查询角色信息
