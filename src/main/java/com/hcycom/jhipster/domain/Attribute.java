@@ -14,6 +14,7 @@ public class Attribute {
 	private int is_enable;	//是否在页面显示（0：是；1：否）
 	private int attribute_status;	//是否在页面显示（0：启用；1：禁用）
 	private int order;	//显示顺序
+	private String resource_name;	//资源名称
 	private String resource_name_foreign;	//外键资源名称
 	public String getAttribute_key() {
 		return attribute_key;
@@ -64,6 +65,13 @@ public class Attribute {
 	public void setOrder(int order) {
 		this.order = order;
 	}
+	
+	public String getResource_name() {
+		return resource_name;
+	}
+	public void setResource_name(String resource_name) {
+		this.resource_name = resource_name;
+	}
 	public String getResource_name_foreign() {
 		return resource_name_foreign;
 	}
@@ -74,8 +82,8 @@ public class Attribute {
 	public String toString() {
 		return "Attribute [attribute_key=" + attribute_key + ", attribute_name=" + attribute_name + ", attribute_type="
 				+ attribute_type + ", format_str=" + format_str + ", is_delete=" + is_delete + ", is_enable="
-				+ is_enable + ", attribute_status=" + attribute_status + ", order=" + order + ", resource_name_foreign="
-				+ resource_name_foreign + "]";
+				+ is_enable + ", attribute_status=" + attribute_status + ", order=" + order + ", resource_name="
+				+ resource_name + ", resource_name_foreign=" + resource_name_foreign + "]";
 	}
 	
 }

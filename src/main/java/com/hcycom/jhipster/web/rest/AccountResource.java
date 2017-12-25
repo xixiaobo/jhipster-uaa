@@ -1,6 +1,12 @@
 package com.hcycom.jhipster.web.rest;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -8,22 +14,27 @@ import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hcycom.jhipster.domain.User;
+import com.hcycom.jhipster.domain.Attribute_values;
+import com.hcycom.jhipster.domain.Group;
+import com.hcycom.jhipster.domain.Role;
 import com.hcycom.jhipster.security.SecurityUtils;
-import com.hcycom.jhipster.service.UserService;
+import com.hcycom.jhipster.service.mapper.Attribute_valuesMapper;
+import com.hcycom.jhipster.service.mapper.GroupMapper;
+import com.hcycom.jhipster.service.mapper.RoleMapper;
 import com.hcycom.jhipster.web.rest.errors.EmailAlreadyUsedException;
 import com.hcycom.jhipster.web.rest.errors.InternalServerErrorException;
 import com.hcycom.jhipster.web.rest.errors.InvalidPasswordException;
@@ -35,173 +46,303 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /**
-* REST controller for managing the current user's account.
-*/
+ * REST controller for managing the current user's account.
+ */
 @RestController
 @RequestMapping("/api")
 @Api(tags = { "账户资源管理" })
 public class AccountResource {
 
-    private final Logger log = LoggerFactory.getLogger(AccountResource.class);
+	private final Logger log = LoggerFactory.getLogger(AccountResource.class);
 
+	// private final UserService userService;
 
-    private final UserService userService;
+	private final Attribute_valuesMapper attribute_valuesMapper;
 
+	private final RoleMapper roleMapper;
+	
+	@Autowired
+	private GroupMapper groupMapper;
 
-    public AccountResource( UserService usersService) {
+	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-        this.userService = usersService;
-    }
+	public AccountResource(Attribute_valuesMapper attribute_valuesMapper, RoleMapper roleMapper) {
 
-    /**
-    * POST  /register : register the user.
-    *
-    * @param managedUserVM the managed user View Model
-    * @throws InvalidPasswordException 400 (Bad Request) if the password is incorrect
-    * @throws EmailAlreadyUsedException 400 (Bad Request) if the email is already used
-    * @throws LoginAlreadyUsedException 400 (Bad Request) if the login is already used
-    */
-    @PostMapping("/register")
-    @Timed
-    @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "注册用户", notes = "新增用户未激活",httpMethod="POST")
+		this.attribute_valuesMapper = attribute_valuesMapper;
+		this.roleMapper = roleMapper;
+	}
+
+	/**
+	 * POST /register : register the user.
+	 *
+	 * @param managedUserVM
+	 *            the managed user View Model
+	 * @throws InvalidPasswordException
+	 *             400 (Bad Request) if the password is incorrect
+	 * @throws EmailAlreadyUsedException
+	 *             400 (Bad Request) if the email is already used
+	 * @throws LoginAlreadyUsedException
+	 *             400 (Bad Request) if the login is already used
+	 */
+	@PostMapping("/register")
+	@Timed
+	@ResponseStatus(HttpStatus.CREATED)
+	@ApiOperation(value = "注册用户", notes = "新增用户未激活", httpMethod = "POST")
 	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/register')")
-    @ApiParam(required=true,name="username,sex,phone,password,name_cn,head_image,email,authorities",value="需要传入的这些值,其他值为空，authorities为角色名称数组")
-    public void registerAccount(@Valid @RequestBody User user) {
-        if (!checkPasswordLength(user.getPassword())) {
-            throw new InvalidPasswordException();
-        }
-        userService.findeUserByName(user.getUsername().toLowerCase()).ifPresent(u -> {throw new LoginAlreadyUsedException();});
-        User user1 = userService.registerUser(user);
-    }
+	public void registerAccount(@RequestBody Map<String, Object> map) {
+		String username = (String) map.get("username");
+		if (username == null || username.equals("")) {
+			username = "";
+		}
+		Attribute_values values = new Attribute_values();
+		values = attribute_valuesMapper.findIdByName("user", username);
+		if (values != null || username.equals("internal")) {
+			throw new LoginAlreadyUsedException();
+		}
+		String password = (String) map.get("password");
+		if (password == null || password.equals("")) {
+			password = "hcy123";
+		}
+		@SuppressWarnings("unchecked")
+		List<String> groups = (List<String>) map.get("groups");
+		String group = "";
+		for (String string : groups) {
+			group += string + ",";
+		}
+		map.put("groups", group);
+		@SuppressWarnings("unchecked")
+		List<String> authorities = (List<String>) map.get("authorities");
+		List<String> au = new ArrayList<String>();
+		if (authorities != null) {
+			for (String string : authorities) {
+				Role role = new Role();
+				role = roleMapper.getRoleByRole_name(string);
+				au.add(role.getUuid());
+			}
+			String roles = "";
+			for (String string : au) {
+				roles += string + ",";
+			}
+			map.put("roles", roles);
+		} else {
+			map.put("roles", "");
+		}
+		if (!checkPasswordLength(password)) {
+			throw new InvalidPasswordException();
+		}
+		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+		String encryptedPassword = passwordEncoder.encode(password);
+		map.put("password", encryptedPassword);
+		map.put("id", uuid);
+		map.put("status", 0);
+		map.remove("authorities");
+		map.remove("login");
+		for (String key : map.keySet()) {
+			Attribute_values attribute_values = new Attribute_values();
+			attribute_values.setUuid(uuid);
+			attribute_values.setResource_name("user");
+			attribute_values.setAttribute_key(key);
+			attribute_values.setValue(map.get(key) + "");
+			attribute_valuesMapper.addAttribute_values(attribute_values);
+		}
+	}
 
-    /**
-    * GET  /activate : 激活已注册用户
-    *
-    * @param key the activation key
-    * @throws RuntimeException 500 (Internal Server Error) if the user couldn't be activated
-    */
-    @GetMapping("/activate")
-    @Timed
-    @ApiOperation(value = "激活用户", notes = "将未激活或用户激活" ,httpMethod="GET")
+	/**
+	 * GET /activate : 激活已注册用户
+	 *
+	 * @param key
+	 *            the activation key
+	 * @throws RuntimeException
+	 *             500 (Internal Server Error) if the user couldn't be activated
+	 */
+	@GetMapping("/activate")
+	@Timed
+	@ApiOperation(value = "激活用户", notes = "将未激活或用户激活", httpMethod = "GET")
 	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/activate')")
-    @ApiParam(required=true,name="username",value="传入要激活的用户名")
-    public void activateAccount(@RequestParam(value = "username") String username) {
-    	User user2=new User();
-    	user2.setUsername(username);
-        Optional<User> user = userService.activateRegistration(user2);
-        if (!user.isPresent()) {
-            throw new InternalServerErrorException("No user was found for this reset key");
-        };
-    }
+	@ApiParam(required = true, name = "username", value = "传入要激活的用户名")
+	public void activateAccount(@RequestParam(value = "username") String username) {
+		Attribute_values attribute_values = attribute_valuesMapper.findIdByName("user", username);
+		attribute_values.setAttribute_key("status");
+		attribute_values.setValue("1");
+		attribute_valuesMapper.updateAttribute_values(attribute_values);
 
-    /**
-    * GET  /authenticate : check if the user is authenticated, and return its login.
-    *
-    * @param request the HTTP request
-    * @return the login if the user is authenticated
-    */
-    @GetMapping("/authenticate")
-    @Timed
-    @ApiOperation(value = "检测是否有ouath2秘钥",httpMethod="GET", notes = "检查用户是否经过身份验证，并返回其登录。")
-    public String isAuthenticated(HttpServletRequest request) {
-        log.debug("REST request to check if the current user is authenticated");
-        return request.getRemoteUser();
-    }
+	}
 
-    /**
-    * GET  /account : get the current user.
-    *
-    * @return the current user
-    * @throws RuntimeException 500 (Internal Server Error) if the user couldn't be returned
-    */
-    @GetMapping("/account")
-    @Timed
-    @ApiOperation(value = "获取当前登录用户信息",httpMethod="GET", notes = "获取当前登录用户信息。")
-    public User getAccount() {
-        return Optional.ofNullable(userService.getUserWithAuthorities())
-            .orElseThrow(() -> new InternalServerErrorException("User could not be found"));
-    }
+	/**
+	 * GET /authenticate : check if the user is authenticated, and return its
+	 * login.
+	 *
+	 * @param request
+	 *            the HTTP request
+	 * @return the login if the user is authenticated
+	 */
+	@GetMapping("/authenticate")
+	@Timed
+	@ApiOperation(value = "检测是否有ouath2秘钥", httpMethod = "GET", notes = "检查用户是否经过身份验证，并返回其登录。")
+	public String isAuthenticated(HttpServletRequest request) {
+		log.debug("REST request to check if the current user is authenticated");
+		return request.getRemoteUser();
+	}
 
-    /**
-    * POST  /account : update the current user information.
-    *
-    * @param userDTO the current user information
-    * @throws EmailAlreadyUsedException 400 (Bad Request) if the email is already used
-    * @throws RuntimeException 500 (Internal Server Error) if the user login wasn't found
-    */
-    @PostMapping("/account")
-    @Timed
-    @ApiOperation(value = "更新当前登录用户信息",httpMethod="POST", notes = "仅更新当前登录用户基础信息。")
-    @ApiParam(required=true,name="name_cn,phone,email",value="仅修改三个值，其他值为空")
-    public void saveAccount(@Valid @RequestBody User user) {
-        final String userLogin = SecurityUtils.getCurrentUserLogin();
-        Optional<User> user1 = userService.findeUserByName(userLogin);
-        if (!user1.isPresent()) {
-            throw new InternalServerErrorException("User could not be found");
-        }
-        userService.updateUser(user.getName_cn(), user.getPhone(), user.getEmail());
-   }
+	/**
+	 * GET /account : get the current user.
+	 *
+	 * @return the current user
+	 * @throws RuntimeException
+	 *             500 (Internal Server Error) if the user couldn't be returned
+	 */
+	@GetMapping("/account")
+	@Timed
+	@ApiOperation(value = "获取当前登录用户信息", httpMethod = "GET", notes = "获取当前登录用户信息。")
+	public Map<String, Object> getAccount() {
+		List<Attribute_values> list = attribute_valuesMapper.findUserByName("user",
+				SecurityUtils.getCurrentUserLogin());
+		if (list == null) {
+			throw new InternalServerErrorException("User could not be found");
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		for (Attribute_values attribute_values : list) {
+			map.put(attribute_values.getAttribute_key(), attribute_values.getValue());
+		}
+		Set<String> groupnames = new HashSet<>();
+		String[] groupids = ((String) map.get("groups")).split(",");
+		for (String groupid : groupids) {
+			Group group = groupMapper.getGroupById(groupid);
+			if (group != null) {
+				groupnames.add(group.getGroup_name());
+			}
+		}
+		Set<String> authorities = new HashSet<>();
+		String[] rolesids = ((String) map.get("roles")).split(",");
+		for (String rolesid : rolesids) {
+			Role role = roleMapper.getUsersAuthority(rolesid);
+			if (role != null) {
+				authorities.add(role.getRole_name());
+			}
+		}
+		map.put("login", map.get("username"));
+		map.put("authorities", authorities);
+		map.put("groupnames", groupnames);
+		map.remove("password");
+		return map;
+	}
 
-    /**
-    * POST  /account/change-password : changes the current user's password
-    *
-    * @param password the new password
-    * @throws InvalidPasswordException 400 (Bad Request) if the new password is incorrect
-    */
-    @PostMapping(path = "/account/change-password")
-    @Timed
-    @ApiOperation(value = "更改当前登录用户的密码",httpMethod="POST", notes = "更改当前登录用户的密码。")
-    @ApiParam(required=true,name="password",value="传入新密码直接修改")
-    public void changePassword(@RequestBody String password) {
-        if (!checkPasswordLength(password)) {
-            throw new InvalidPasswordException();
-        }
-        userService.changePassword(password);
-   }
+	/**
+	 * POST /account : update the current user information.
+	 *
+	 * @param userDTO
+	 *            the current user information
+	 * @throws EmailAlreadyUsedException
+	 *             400 (Bad Request) if the email is already used
+	 * @throws RuntimeException
+	 *             500 (Internal Server Error) if the user login wasn't found
+	 */
+	@PostMapping("/account")
+	@Timed
+	@ApiOperation(value = "更新当前登录用户信息", httpMethod = "POST", notes = "仅更新当前登录用户基础信息,仅修改三个值。name_cn,phone,email")
+	@ApiParam(required = true, name = "name_cn,phone,email", value = "仅修改三个值，其他值为空")
+	public void saveAccount(@Valid @RequestBody Map<String, String> map) {
+		final String userLogin = SecurityUtils.getCurrentUserLogin();
+		Attribute_values attribute_values = attribute_valuesMapper.findIdByName("user", userLogin);
+		if (attribute_values == null) {
+			throw new InternalServerErrorException("User could not be found");
+		}
+		if (map.get("name_cn") != null) {
+			attribute_values.setAttribute_key("name_cn");
+			attribute_values.setValue(map.get("name_cn"));
+			attribute_valuesMapper.updateAttribute_values(attribute_values);
+		}
+		if (map.get("phone") != null) {
+			attribute_values.setAttribute_key("phone");
+			attribute_values.setValue(map.get("phone"));
+			attribute_valuesMapper.updateAttribute_values(attribute_values);
+		}
+		if (map.get("email") != null) {
+			attribute_values.setAttribute_key("email");
+			attribute_values.setValue(map.get("email"));
+			attribute_valuesMapper.updateAttribute_values(attribute_values);
+		}
 
-    /**
-    * POST   /account/reset-password/init : Send an email to reset the password of the user
-    *
-    * @param mail the mail of the user
-    * @throws EmailNotFoundException 400 (Bad Request) if the email address is not registered
-    */
-//    @PostMapping(path = "/account/reset-password/init")
-//    @Timed
-//    public void requestPasswordReset(@RequestBody String mail) {
-//       mailService.sendPasswordResetMail(
-//           usersService.requestPasswordReset(mail)
-//               .orElseThrow(EmailNotFoundException::new)
-//       );
-//    }
+	}
 
-    /**
-    * POST   /account/reset-password/finish : Finish to reset the password of the user
-    *
-    * @param keyAndPassword the generated key and the new password
-    * @throws InvalidPasswordException 400 (Bad Request) if the password is incorrect
-    * @throws RuntimeException 500 (Internal Server Error) if the password could not be reset
-    */
-    @PostMapping(path = "/account/reset-password/finish")
-    @Timed
+	/**
+	 * POST /account/change-password : changes the current user's password
+	 *
+	 * @param password
+	 *            the new password
+	 * @throws InvalidPasswordException
+	 *             400 (Bad Request) if the new password is incorrect
+	 */
+	@PostMapping(path = "/account/change-password")
+	@Timed
+	@ApiOperation(value = "更改当前登录用户的密码", httpMethod = "POST", notes = "更改当前登录用户的密码。")
+	@ApiParam(required = true, name = "password", value = "传入新密码直接修改")
+	public void changePassword(@RequestBody String password) {
+		if (!checkPasswordLength(password)) {
+			throw new InvalidPasswordException();
+		}
+		final String userLogin = SecurityUtils.getCurrentUserLogin();
+		Attribute_values attribute_values = attribute_valuesMapper.findIdByName("user", userLogin);
+		if (attribute_values == null) {
+			throw new InternalServerErrorException("User could not be found");
+		}
+		String encryptedPassword = passwordEncoder.encode(password);
+		attribute_values.setAttribute_key("password");
+		attribute_values.setValue(encryptedPassword);
+		attribute_valuesMapper.updateAttribute_values(attribute_values);
+	}
+
+	/**
+	 * POST /account/reset-password/init : Send an email to reset the password
+	 * of the user
+	 *
+	 * @param mail
+	 *            the mail of the user
+	 * @throws EmailNotFoundException
+	 *             400 (Bad Request) if the email address is not registered
+	 */
+	// @PostMapping(path = "/account/reset-password/init")
+	// @Timed
+	// public void requestPasswordReset(@RequestBody String mail) {
+	// mailService.sendPasswordResetMail(
+	// usersService.requestPasswordReset(mail)
+	// .orElseThrow(EmailNotFoundException::new)
+	// );
+	// }
+
+	/**
+	 * POST /account/reset-password/finish : Finish to reset the password of the
+	 * user
+	 *
+	 * @param keyAndPassword
+	 *            the generated key and the new password
+	 * @throws InvalidPasswordException
+	 *             400 (Bad Request) if the password is incorrect
+	 * @throws RuntimeException
+	 *             500 (Internal Server Error) if the password could not be
+	 *             reset
+	 */
+	@PostMapping(path = "/account/reset-password/finish")
+	@Timed
 	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/account/reset-password/finish')")
-    @ApiOperation(value = "更改用户的密码",httpMethod="POST", notes = "更改用户的密码。")
-    @ApiParam(required=true,name="username,newPassword",value="修改用户的名称以及新密码，直接修改")
-    public void finishPasswordReset(@RequestBody UsernameAndPasswordVM usernameAndPassword) {
-        if (!checkPasswordLength(usernameAndPassword.getNewPassword())) {
-            throw new InvalidPasswordException();
-        }
-        Optional<User> user =
-            userService.completePasswordReset(usernameAndPassword.getNewPassword(), usernameAndPassword.getUsername());
+	@ApiOperation(value = "更改用户的密码", httpMethod = "POST", notes = "更改用户的密码。")
+	@ApiParam(required = true, name = "username,newPassword", value = "修改用户的名称以及新密码，直接修改")
+	public void finishPasswordReset(@RequestBody UsernameAndPasswordVM usernameAndPassword) {
+		if (!checkPasswordLength(usernameAndPassword.getNewPassword())) {
+			throw new InvalidPasswordException();
+		}
+		Attribute_values attribute_values = attribute_valuesMapper.findIdByName("user",
+				usernameAndPassword.getUsername());
+		if (attribute_values == null) {
+			throw new InternalServerErrorException("User could not be found");
+		}
+		String encryptedPassword = passwordEncoder.encode(usernameAndPassword.getNewPassword());
+		attribute_values.setAttribute_key("password");
+		attribute_values.setValue(encryptedPassword);
+		attribute_valuesMapper.updateAttribute_values(attribute_values);
+	}
 
-        if (!user.isPresent()) {
-            throw new InternalServerErrorException("No user was found for this reset key");
-        }
-    }
-
-    private static boolean checkPasswordLength(String password) {
-        return !StringUtils.isEmpty(password) &&
-            password.length() >= 4 &&
-            password.length() <= 100;
-    }
+	private static boolean checkPasswordLength(String password) {
+		return !StringUtils.isEmpty(password) && password.length() >= 4 && password.length() <= 100;
+	}
 }
