@@ -19,7 +19,7 @@ public interface GroupMapper {
 	 * @param role
 	 * @return
 	 */
-	@Insert(value="INSERT INTO group(uuid,group_name,group_desc,"
+	@Insert(value="INSERT INTO `group` (uuid,group_name,group_desc,"
 			+ "group_super,group_type,group_status) VALUES " 
 	 + "(#{group.uuid},#{group.group_name},#{group.group_desc},"
 	 + "#{group.group_super},#{group.group_type},#{group.group_status})")
@@ -30,7 +30,7 @@ public interface GroupMapper {
 	 * @param role
 	 * @return
 	 */
-	@Update("update group set group_name = #{group.group_name},group_desc = #{group.group_desc},"
+	@Update("update `group`  set group_name = #{group.group_name},group_desc = #{group.group_desc},"
 			+ "group_super = #{group.group_super},group_type = #{group.group_type},"
 			+ "group_status = #{group.group_status} "
 			+ "where uuid=#{group.uuid}")
@@ -41,7 +41,7 @@ public interface GroupMapper {
 	 * @param role
 	 * @return
 	 */
-	@Delete("delete from group where uuid=#{group.uuid}")
+	@Delete("delete from `group`  where uuid=#{group.uuid}")
 	public int deleteGroup(@Param("group") Group group);
 	
 
@@ -50,7 +50,7 @@ public interface GroupMapper {
 	 * @param roleid
 	 * @return
 	 */
-	@Select("select * from group where uuid=#{groupid}")
+	@Select("select * from `group`  where uuid=#{groupid}")
 	public Group getGroupById(@Param("groupid") String groupid);
 	
 
@@ -59,7 +59,7 @@ public interface GroupMapper {
 	 * 查询所有群组
 	 * @return
 	 */
-	@Select("select * from group")
+	@Select("select * from `group` ")
 	public List<Group> getAllGroup();
 
 }

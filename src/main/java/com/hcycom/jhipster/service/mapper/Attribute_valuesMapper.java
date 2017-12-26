@@ -185,7 +185,7 @@ public interface Attribute_valuesMapper {
 	 * @param string
 	 * @return
 	 */
-	@Select("select * from attribute_values where resource_name=#{resource_name} AND uuid in (#{listID})")
+	@Select("select * from attribute_values where resource_name=#{resource_name} AND uuid in (${listID})")
 	public List<Attribute_values> findAttribute_valuesByListID(@Param("listID") String listID,
 			@Param("resource_name") String resource_name);
 
@@ -196,8 +196,8 @@ public interface Attribute_valuesMapper {
 	 * @param sql
 	 * @return
 	 */
-	@Select("select * from attribute_values where resource_name=#{attribute_values.resource_name} "
-			+ "AND attribute_key =#{attribute_values.attribute_key} and value like #{sql}")
+	@Select("select uuid from attribute_values where resource_name=#{attribute_values.resource_name} "
+			+ "AND attribute_key =#{attribute_values.attribute_key} and value like ${sql}")
 	public List<String> findAttribute_valuesByKeyAndValue(@Param("attribute_values") Attribute_values attribute_values,
 			@Param("sql") String sql);
 

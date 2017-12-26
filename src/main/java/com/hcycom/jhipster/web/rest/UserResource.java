@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hcycom.jhipster.config.Constants;
 import com.hcycom.jhipster.domain.Attribute;
 import com.hcycom.jhipster.domain.Attribute_values;
 import com.hcycom.jhipster.domain.Group;
@@ -64,20 +63,13 @@ public class UserResource {
 
 	private final Logger log = LoggerFactory.getLogger(UserResource.class);
 
-	// private final UserService userService;
-	//
-	// public UserResource(UserService userService) {
-	//
-	// this.userService = userService;
-	// }
-
 	private final Attribute_valuesMapper attribute_valuesMapper;
 
 	private final RoleMapper roleMapper;
 
 	@Autowired
 	private AttributeMapper attributeMapper;
-	
+
 	@Autowired
 	private GroupMapper groupMapper;
 
@@ -109,7 +101,7 @@ public class UserResource {
 	@PostMapping("/users")
 	@Timed
 	@ApiOperation(value = "新增用户", notes = "新增用户已经激活", httpMethod = "POST")
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users_post')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users--POST')")
 	@ApiParam(required = true, name = "username,sex,phone,password,name_cn,head_image,email,authorities", value = "需要传入的这些值,其他值为空，authorities为角色名称数组")
 	public ResponseEntity<Map<String, Object>> createUser(@Valid @RequestBody Map<String, Object> map)
 			throws URISyntaxException {
@@ -146,7 +138,7 @@ public class UserResource {
 				roles += string + ",";
 			}
 			map.put("roles", roles);
-		}else{
+		} else {
 			map.put("roles", "");
 		}
 		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
@@ -185,12 +177,19 @@ public class UserResource {
 	@PutMapping("/users")
 	@Timed
 	@ApiOperation(value = "修改用户", notes = "修改用户所有信息", httpMethod = "PUT")
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users_PUT')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users--PUT')")
 	@ApiParam(required = true, name = "sex,phone,password,name_cn,head_image,email,authorities", value = "需要传入的这些值,其他值为空，authorities为角色名称数组")
 	public ResponseEntity<Map<String, Object>> updateUser(@Valid @RequestBody Map<String, Object> map) {
 		log.debug("REST request to update User : {}", map);
 		String username = (String) map.get("username");
 		String id = (String) map.get("id");
+		Attribute_values value = new Attribute_values();
+		value.setUuid(id);
+		value.setResource_name("user");
+		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_nameANDUuid(value);
+		if (list == null) {
+			throw new InternalServerErrorException("User could not be found");
+		}
 		map.remove("password");
 		map.remove("username");
 		map.remove("id");
@@ -215,17 +214,11 @@ public class UserResource {
 				roles += string + ",";
 			}
 			map.put("roles", roles);
-		}else{
+		} else {
 			map.put("roles", "");
 		}
 		map.remove("authorities");
 		map.remove("login");
-		Attribute_values value = new Attribute_values();
-		value.setUuid(id);
-		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_nameANDUuid(value);
-		if (list == null) {
-			throw new InternalServerErrorException("User could not be found");
-		}
 		for (String key : map.keySet()) {
 			Attribute_values attribute_values2 = new Attribute_values();
 			attribute_values2.setUuid(id);
@@ -247,7 +240,7 @@ public class UserResource {
 	 */
 	@GetMapping("/users")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users_GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users--GET')")
 	@ApiOperation(value = "分页获取用户", httpMethod = "GET", notes = "通过分页值获取用户")
 	public ResponseEntity<List<Map<String, Object>>> getAllUsers(@ApiParam Pageable pageable) {
 		Attribute_values attribute_values = new Attribute_values();
@@ -258,8 +251,8 @@ public class UserResource {
 		for (String string : uuids) {
 			ListID += "\"" + string + "\",";
 		}
-		if(!ListID.equals("")){
-		ListID = ListID.substring(0, ListID.length() - 1);
+		if (!ListID.equals("")) {
+			ListID = ListID.substring(0, ListID.length() - 1);
 		}
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, "user");
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
@@ -270,22 +263,26 @@ public class UserResource {
 					if (values2.getUuid().equals(values.getValue())) {
 						map.put(values2.getAttribute_key(), values2.getValue());
 					}
-					
+
 				}
 				Set<String> groupnames = new HashSet<>();
-				String[] groupids = ((String) map.get("groups")).split(",");
-				for (String groupid : groupids) {
-					Group group = groupMapper.getGroupById(groupid);
-					if (group != null) {
-						groupnames.add(group.getGroup_name());
+				if (map.containsKey("groups")) {
+					String[] groupids = ((String) map.get("groups")).split(",");
+					for (String groupid : groupids) {
+						Role role = roleMapper.getUsersAuthority(groupid);
+						if (role != null) {
+							groupnames.add(role.getRole_name());
+						}
 					}
 				}
 				Set<String> authorities = new HashSet<>();
-				String[] rolesids = ((String) map.get("roles")).split(",");
-				for (String rolesid : rolesids) {
-					Role role=roleMapper.getUsersAuthority(rolesid);
-					if(role!=null){
-						authorities.add(role.getRole_name());
+				if (map.containsKey("roles")) {
+					String[] rolesids = ((String) map.get("roles")).split(",");
+					for (String rolesid : rolesids) {
+						Role role = roleMapper.getUsersAuthority(rolesid);
+						if (role != null) {
+							authorities.add(role.getRole_name());
+						}
 					}
 				}
 				map.remove("password");
@@ -306,7 +303,7 @@ public class UserResource {
 	 */
 	@GetMapping("/users/authorities")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/authorities')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/authorities--GET')")
 	@ApiOperation(value = "获取角色名称", httpMethod = "GET", notes = "获取所有的角色名称")
 	public List<String> getAuthorities() {
 
@@ -321,9 +318,9 @@ public class UserResource {
 	 * @return the ResponseEntity with status 200 (OK) and with body the "login"
 	 *         user, or with status 404 (Not Found)
 	 */
-	@GetMapping("/users/{login:" + Constants.LOGIN_REGEX + "}")
+	@GetMapping("/users/{login}")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/{login}_GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/{login}--GET')")
 	@ApiOperation(value = "获取用户", httpMethod = "GET", notes = "获取用户所有信息，login为用户名称")
 	@ApiParam(name = "login", value = "参数类型为String,是用户的名称", required = true)
 	public ResponseEntity<Map<String, Object>> getUser(@PathVariable String login) {
@@ -332,24 +329,26 @@ public class UserResource {
 		if (list == null) {
 			throw new InternalServerErrorException("User could not be found");
 		}
-		Map<String,Object> map = new HashMap<String,Object>();
+		Map<String, Object> map = new HashMap<String, Object>();
 		for (Attribute_values attribute_values : list) {
 			map.put(attribute_values.getAttribute_key(), attribute_values.getValue());
 		}
 		Set<String> groupnames = new HashSet<>();
-		String[] groupids = ((String) map.get("groups")).split(",");
-		for (String groupid : groupids) {
-			Group group = groupMapper.getGroupById(groupid);
-			if (group != null) {
-				groupnames.add(group.getGroup_name());
+		if (map.containsKey("groups")) {
+			String[] groupids = ((String) map.get("groups")).split(",");
+			for (String groupid : groupids) {
+				Group group = groupMapper.getGroupById(groupid);
+				if (group != null) {
+					groupnames.add(group.getGroup_name());
+				}
 			}
 		}
 		Set<String> authorities = new HashSet<>();
-		if ((String) map.get("roles") != null || !map.get("roles").equals("")) {
+		if (map.containsKey("roles")) {
 			String[] rolesids = ((String) map.get("roles")).split(",");
 			for (String rolesid : rolesids) {
-				Role role=roleMapper.getUsersAuthority(rolesid);
-				if(role!=null){
+				Role role = roleMapper.getUsersAuthority(rolesid);
+				if (role != null) {
 					authorities.add(role.getRole_name());
 				}
 			}
@@ -368,14 +367,17 @@ public class UserResource {
 	 *            the login of the user to delete
 	 * @return the ResponseEntity with status 200 (OK)
 	 */
-	@DeleteMapping("/users/{login:" + Constants.LOGIN_REGEX + "}")
+	@DeleteMapping("/users/{login}")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/{login}_DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/users/{login}--DELETE')")
 	@ApiOperation(value = "删除用户，根据用户名", httpMethod = "DELETE", notes = "删除用户所有信息，login为用户名称")
 	@ApiParam(name = "login", value = "参数类型为String,是用户的名称", required = true)
 	public ResponseEntity<Void> deleteUser(@PathVariable String login) {
 		log.debug("REST request to delete User: {}", login);
 		Attribute_values values = attribute_valuesMapper.findIdByName("user", login);
+		if (values == null) {
+			throw new InternalServerErrorException("所删用户不存在！");
+		}
 		Attribute_values attribute_values = new Attribute_values();
 		attribute_values.setResource_name("user");
 		attribute_values.setUuid(values.getUuid());
@@ -383,10 +385,9 @@ public class UserResource {
 		return ResponseEntity.ok().headers(HeaderUtil.createAlert("userManagement.deleted", login)).build();
 	}
 
-
 	@DeleteMapping("/usersByMore")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/usersByMore')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/usersByMore--DELETE')")
 	@ApiOperation(value = "删除多个用户", httpMethod = "DELETE", notes = "删除多个用户根据id数组")
 	@ApiParam(name = "ids", value = "参数类型为String[],为用户id的数组", required = true)
 	public void deleteUserByMore(@RequestBody String[] ids) {
@@ -406,7 +407,7 @@ public class UserResource {
 	 */
 	@GetMapping("/allusers")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/allusers')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/allusers--GET')")
 	@ApiOperation(value = "获取所有用户", notes = "获取所有用户所有信息", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getAllUser() {
 		Attribute_values attribute_values = new Attribute_values();
@@ -422,19 +423,21 @@ public class UserResource {
 					}
 				}
 				Set<String> groupnames = new HashSet<>();
-				String[] groupids = ((String) map.get("groups")).split(",");
-				for (String groupid : groupids) {
-					Group group = groupMapper.getGroupById(groupid);
-					if (group != null) {
-						groupnames.add(group.getGroup_name());
+				if (map.containsKey("groups")) {
+					String[] groupids = ((String) map.get("groups")).split(",");
+					for (String groupid : groupids) {
+						Group group = groupMapper.getGroupById(groupid);
+						if (group != null) {
+							groupnames.add(group.getGroup_name());
+						}
 					}
 				}
 				Set<String> authorities = new HashSet<>();
-				if ((String) map.get("roles") != null || !map.get("roles").equals("")) {
+				if (map.containsKey("roles")) {
 					String[] rolesids = ((String) map.get("roles")).split(",");
 					for (String rolesid : rolesids) {
-						Role role=roleMapper.getUsersAuthority(rolesid);
-						if(role!=null){
+						Role role = roleMapper.getUsersAuthority(rolesid);
+						if (role != null) {
 							authorities.add(role.getRole_name());
 						}
 					}
@@ -469,11 +472,11 @@ public class UserResource {
 	 */
 	@GetMapping("/allusersTable")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/allusersTable')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/allusersTable--GET')")
 	@ApiOperation(value = "获取所有用户表属性", notes = "获取所有用户表属性", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getAllUserTable() {
 		Attribute attribute = new Attribute();
-		attribute.setResource_name_foreign("user");
+		attribute.setResource_name("user");
 		List<Attribute> list = attributeMapper.findAttributeByResource_name(attribute);
 
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -488,10 +491,10 @@ public class UserResource {
 			map.put("msg", "服务器出问题了！");
 			map.put("error_code", 2);
 		}
-		
+
 		return new ResponseEntity<Map<String, Object>>(map, HttpStatus.OK);
 	}
-	
+
 	/**
 	 * 获取所有用户表属性
 	 * 
@@ -499,16 +502,16 @@ public class UserResource {
 	 */
 	@PostMapping("/getusersByLike")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getusersByLike')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getusersByLike--POST')")
 	@ApiOperation(value = "获取筛选用户", notes = "获取筛选后用户", httpMethod = "POST")
 	public ResponseEntity<Map<String, Object>> getusersByLike(@RequestBody Map<String, Object> map) {
-		List<String> uuids=new ArrayList<String>();
+		List<String> uuids = new ArrayList<String>();
 		for (String key : map.keySet()) {
 			Attribute_values attribute_values = new Attribute_values();
 			attribute_values.setResource_name("user");
 			attribute_values.setAttribute_key(key);
-			String sql="\"%"+map.get(key) + "%\"";
-			List<String> list2 =attribute_valuesMapper.findAttribute_valuesByKeyAndValue(attribute_values,sql);
+			String sql = "\"%" + map.get(key) + "%\"";
+			List<String> list2 = attribute_valuesMapper.findAttribute_valuesByKeyAndValue(attribute_values, sql);
 			list2.removeAll(uuids);
 			uuids.addAll(list2);
 		}
@@ -516,7 +519,9 @@ public class UserResource {
 		for (String string : uuids) {
 			ListID += "\"" + string + "\",";
 		}
-		ListID = ListID.substring(0, ListID.length() - 1);
+		if (!ListID.equals("")) {
+			ListID = ListID.substring(0, ListID.length() - 1);
+		}
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, "user");
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {
@@ -528,19 +533,23 @@ public class UserResource {
 					}
 				}
 				Set<String> groupnames = new HashSet<>();
-				String[] groupids = ((String) map.get("groups")).split(",");
-				for (String groupid : groupids) {
-					Group group = groupMapper.getGroupById(groupid);
-					if (group != null) {
-						groupnames.add(group.getGroup_name());
+				if (map.containsKey("groups")) {
+					String[] groupids = ((String) map.get("groups")).split(",");
+					for (String groupid : groupids) {
+						Group group = groupMapper.getGroupById(groupid);
+						if (group != null) {
+							groupnames.add(group.getGroup_name());
+						}
 					}
 				}
 				Set<String> authorities = new HashSet<>();
-				String[] rolesids = ((String) map2.get("roles")).split(",");
-				for (String rolesid : rolesids) {
-					Role role=roleMapper.getUsersAuthority(rolesid);
-					if(role!=null){
-						authorities.add(role.getRole_name());
+				if (map.containsKey("roles")) {
+					String[] rolesids = ((String) map2.get("roles")).split(",");
+					for (String rolesid : rolesids) {
+						Role role = roleMapper.getUsersAuthority(rolesid);
+						if (role != null) {
+							authorities.add(role.getRole_name());
+						}
 					}
 				}
 				map2.remove("password");
@@ -564,7 +573,8 @@ public class UserResource {
 			map3.put("msg", "服务器出问题了！");
 			map3.put("error_code", 2);
 		}
-		
+
 		return new ResponseEntity<Map<String, Object>>(map3, HttpStatus.OK);
 	}
+
 }

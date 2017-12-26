@@ -88,7 +88,7 @@ public class AccountResource {
 	@Timed
 	@ResponseStatus(HttpStatus.CREATED)
 	@ApiOperation(value = "注册用户", notes = "新增用户未激活", httpMethod = "POST")
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/register')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/register--POST')")
 	public void registerAccount(@RequestBody Map<String, Object> map) {
 		String username = (String) map.get("username");
 		if (username == null || username.equals("")) {
@@ -158,7 +158,7 @@ public class AccountResource {
 	@GetMapping("/activate")
 	@Timed
 	@ApiOperation(value = "激活用户", notes = "将未激活或用户激活", httpMethod = "GET")
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/activate')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/activate--GET')")
 	@ApiParam(required = true, name = "username", value = "传入要激活的用户名")
 	public void activateAccount(@RequestParam(value = "username") String username) {
 		Attribute_values attribute_values = attribute_valuesMapper.findIdByName("user", username);
@@ -205,19 +205,23 @@ public class AccountResource {
 			map.put(attribute_values.getAttribute_key(), attribute_values.getValue());
 		}
 		Set<String> groupnames = new HashSet<>();
-		String[] groupids = ((String) map.get("groups")).split(",");
-		for (String groupid : groupids) {
-			Group group = groupMapper.getGroupById(groupid);
-			if (group != null) {
-				groupnames.add(group.getGroup_name());
+		if ( map.containsKey("groups") ) {
+			String[] groupids = ((String) map.get("groups")).split(",");
+			for (String groupid : groupids) {
+				Group group=groupMapper.getGroupById(groupid);
+				if (group != null) {
+					groupnames.add(group.getGroup_name());
+				}
 			}
 		}
 		Set<String> authorities = new HashSet<>();
-		String[] rolesids = ((String) map.get("roles")).split(",");
-		for (String rolesid : rolesids) {
-			Role role = roleMapper.getUsersAuthority(rolesid);
-			if (role != null) {
-				authorities.add(role.getRole_name());
+		if ( map.containsKey("roles") ) {
+			String[] rolesids = ((String) map.get("roles")).split(",");
+			for (String rolesid : rolesids) {
+				Role role = roleMapper.getUsersAuthority(rolesid);
+				if (role != null) {
+					authorities.add(role.getRole_name());
+				}
 			}
 		}
 		map.put("login", map.get("username"));
@@ -247,17 +251,17 @@ public class AccountResource {
 		if (attribute_values == null) {
 			throw new InternalServerErrorException("User could not be found");
 		}
-		if (map.get("name_cn") != null) {
+		if (map.containsKey("name_cn") ) {
 			attribute_values.setAttribute_key("name_cn");
 			attribute_values.setValue(map.get("name_cn"));
 			attribute_valuesMapper.updateAttribute_values(attribute_values);
 		}
-		if (map.get("phone") != null) {
+		if (map.containsKey("phone") ) {
 			attribute_values.setAttribute_key("phone");
 			attribute_values.setValue(map.get("phone"));
 			attribute_valuesMapper.updateAttribute_values(attribute_values);
 		}
-		if (map.get("email") != null) {
+		if (map.containsKey("email") ) {
 			attribute_values.setAttribute_key("email");
 			attribute_values.setValue(map.get("email"));
 			attribute_valuesMapper.updateAttribute_values(attribute_values);
