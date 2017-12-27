@@ -60,7 +60,7 @@ public class AccountResource {
 	private final Attribute_valuesMapper attribute_valuesMapper;
 
 	private final RoleMapper roleMapper;
-	
+
 	@Autowired
 	private GroupMapper groupMapper;
 
@@ -87,8 +87,7 @@ public class AccountResource {
 	@PostMapping("/register")
 	@Timed
 	@ResponseStatus(HttpStatus.CREATED)
-	@ApiOperation(value = "注册用户", notes = "新增用户未激活", httpMethod = "POST")
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/register--POST')")
+	@ApiOperation(value = "注册用户", notes = "新增用户未激活，无权限控制", httpMethod = "POST")
 	public void registerAccount(@RequestBody Map<String, Object> map) {
 		String username = (String) map.get("username");
 		if (username == null || username.equals("")) {
@@ -103,17 +102,21 @@ public class AccountResource {
 		if (password == null || password.equals("")) {
 			password = "hcy123";
 		}
-		@SuppressWarnings("unchecked")
-		List<String> groups = (List<String>) map.get("groups");
-		String group = "";
-		for (String string : groups) {
-			group += string + ",";
+		if (map.containsKey("groups")) {
+			@SuppressWarnings("unchecked")
+			List<String> groups = (List<String>) map.get("groups");
+			String group = "";
+			for (String string : groups) {
+				group += string + ",";
+			}
+			map.put("groups", group);
+		} else {
+			map.put("groups", "");
 		}
-		map.put("groups", group);
-		@SuppressWarnings("unchecked")
-		List<String> authorities = (List<String>) map.get("authorities");
-		List<String> au = new ArrayList<String>();
-		if (authorities != null) {
+		if (map.containsKey("authorities")) {
+			@SuppressWarnings("unchecked")
+			List<String> authorities = (List<String>) map.get("authorities");
+			List<String> au = new ArrayList<String>();
 			for (String string : authorities) {
 				Role role = new Role();
 				role = roleMapper.getRoleByRole_name(string);
@@ -157,8 +160,7 @@ public class AccountResource {
 	 */
 	@GetMapping("/activate")
 	@Timed
-	@ApiOperation(value = "激活用户", notes = "将未激活或用户激活", httpMethod = "GET")
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/activate--GET')")
+	@ApiOperation(value = "激活用户", notes = "将未激活或用户激活，无权限控制", httpMethod = "GET")
 	@ApiParam(required = true, name = "username", value = "传入要激活的用户名")
 	public void activateAccount(@RequestParam(value = "username") String username) {
 		Attribute_values attribute_values = attribute_valuesMapper.findIdByName("user", username);
@@ -178,7 +180,7 @@ public class AccountResource {
 	 */
 	@GetMapping("/authenticate")
 	@Timed
-	@ApiOperation(value = "检测是否有ouath2秘钥", httpMethod = "GET", notes = "检查用户是否经过身份验证，并返回其登录。")
+	@ApiOperation(value = "检测是否有ouath2秘钥", httpMethod = "GET", notes = "检查用户是否经过身份验证，并返回其登录，无权限控制")
 	public String isAuthenticated(HttpServletRequest request) {
 		log.debug("REST request to check if the current user is authenticated");
 		return request.getRemoteUser();
@@ -193,7 +195,7 @@ public class AccountResource {
 	 */
 	@GetMapping("/account")
 	@Timed
-	@ApiOperation(value = "获取当前登录用户信息", httpMethod = "GET", notes = "获取当前登录用户信息。")
+	@ApiOperation(value = "获取当前登录用户信息", httpMethod = "GET", notes = "获取当前登录用户信息，无权限控制")
 	public Map<String, Object> getAccount() {
 		List<Attribute_values> list = attribute_valuesMapper.findUserByName("user",
 				SecurityUtils.getCurrentUserLogin());
@@ -205,17 +207,17 @@ public class AccountResource {
 			map.put(attribute_values.getAttribute_key(), attribute_values.getValue());
 		}
 		Set<String> groupnames = new HashSet<>();
-		if ( map.containsKey("groups") ) {
+		if (map.containsKey("groups")) {
 			String[] groupids = ((String) map.get("groups")).split(",");
 			for (String groupid : groupids) {
-				Group group=groupMapper.getGroupById(groupid);
+				Group group = groupMapper.getGroupById(groupid);
 				if (group != null) {
 					groupnames.add(group.getGroup_name());
 				}
 			}
 		}
 		Set<String> authorities = new HashSet<>();
-		if ( map.containsKey("roles") ) {
+		if (map.containsKey("roles")) {
 			String[] rolesids = ((String) map.get("roles")).split(",");
 			for (String rolesid : rolesids) {
 				Role role = roleMapper.getUsersAuthority(rolesid);
@@ -243,7 +245,7 @@ public class AccountResource {
 	 */
 	@PostMapping("/account")
 	@Timed
-	@ApiOperation(value = "更新当前登录用户信息", httpMethod = "POST", notes = "仅更新当前登录用户基础信息,仅修改三个值。name_cn,phone,email")
+	@ApiOperation(value = "更新当前登录用户信息", httpMethod = "POST", notes = "仅更新当前登录用户基础信息,仅修改三个值。name_cn,phone,email，无权限控制")
 	@ApiParam(required = true, name = "name_cn,phone,email", value = "仅修改三个值，其他值为空")
 	public void saveAccount(@Valid @RequestBody Map<String, String> map) {
 		final String userLogin = SecurityUtils.getCurrentUserLogin();
@@ -251,17 +253,17 @@ public class AccountResource {
 		if (attribute_values == null) {
 			throw new InternalServerErrorException("User could not be found");
 		}
-		if (map.containsKey("name_cn") ) {
+		if (map.containsKey("name_cn")) {
 			attribute_values.setAttribute_key("name_cn");
 			attribute_values.setValue(map.get("name_cn"));
 			attribute_valuesMapper.updateAttribute_values(attribute_values);
 		}
-		if (map.containsKey("phone") ) {
+		if (map.containsKey("phone")) {
 			attribute_values.setAttribute_key("phone");
 			attribute_values.setValue(map.get("phone"));
 			attribute_valuesMapper.updateAttribute_values(attribute_values);
 		}
-		if (map.containsKey("email") ) {
+		if (map.containsKey("email")) {
 			attribute_values.setAttribute_key("email");
 			attribute_values.setValue(map.get("email"));
 			attribute_valuesMapper.updateAttribute_values(attribute_values);
@@ -279,7 +281,7 @@ public class AccountResource {
 	 */
 	@PostMapping(path = "/account/change-password")
 	@Timed
-	@ApiOperation(value = "更改当前登录用户的密码", httpMethod = "POST", notes = "更改当前登录用户的密码。")
+	@ApiOperation(value = "更改当前登录用户的密码", httpMethod = "POST", notes = "更改当前登录用户的密码，无权限控制")
 	@ApiParam(required = true, name = "password", value = "传入新密码直接修改")
 	public void changePassword(@RequestBody String password) {
 		if (!checkPasswordLength(password)) {
@@ -328,8 +330,8 @@ public class AccountResource {
 	 */
 	@PostMapping(path = "/account/reset-password/finish")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/account/reset-password/finish')")
-	@ApiOperation(value = "更改用户的密码", httpMethod = "POST", notes = "更改用户的密码。")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/account/reset-password/finish--POST')")
+	@ApiOperation(value = "更改用户的密码", httpMethod = "POST", notes = "更改用户的密码")
 	@ApiParam(required = true, name = "username,newPassword", value = "修改用户的名称以及新密码，直接修改")
 	public void finishPasswordReset(@RequestBody UsernameAndPasswordVM usernameAndPassword) {
 		if (!checkPasswordLength(usernameAndPassword.getNewPassword())) {

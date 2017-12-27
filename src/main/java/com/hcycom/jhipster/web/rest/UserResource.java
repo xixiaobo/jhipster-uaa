@@ -117,17 +117,21 @@ public class UserResource {
 		if (password == null || password.equals("")) {
 			password = "hcy123";
 		}
-		@SuppressWarnings("unchecked")
-		List<String> groups = (List<String>) map.get("groups");
-		String group = "";
-		for (String string : groups) {
-			group += string + ",";
+		if (map.containsKey("groups")) {
+			@SuppressWarnings("unchecked")
+			List<String> groups = (List<String>) map.get("groups");
+			String group = "";
+			for (String string : groups) {
+				group += string + ",";
+			}
+			map.put("groups", group);
+		} else {
+			map.put("groups", "");
 		}
-		map.put("groups", group);
-		@SuppressWarnings("unchecked")
-		List<String> authorities = (List<String>) map.get("authorities");
-		List<String> au = new ArrayList<String>();
-		if (authorities != null) {
+		if (map.containsKey("authorities")) {
+			@SuppressWarnings("unchecked")
+			List<String> authorities = (List<String>) map.get("authorities");
+			List<String> au = new ArrayList<String>();
 			for (String string : authorities) {
 				Role role = new Role();
 				role = roleMapper.getRoleByRole_name(string);
@@ -193,17 +197,21 @@ public class UserResource {
 		map.remove("password");
 		map.remove("username");
 		map.remove("id");
-		@SuppressWarnings("unchecked")
-		List<String> groups = (List<String>) map.get("groups");
-		String group = "";
-		for (String string : groups) {
-			group += string + ",";
+		if (map.containsKey("groups")) {
+			@SuppressWarnings("unchecked")
+			List<String> groups = (List<String>) map.get("groups");
+			String group = "";
+			for (String string : groups) {
+				group += string + ",";
+			}
+			map.put("groups", group);
+		} else {
+			map.put("groups", "");
 		}
-		map.put("groups", group);
-		@SuppressWarnings("unchecked")
-		List<String> authorities = (List<String>) map.get("authorities");
-		List<String> au = new ArrayList<String>();
-		if (authorities != null) {
+		if (map.containsKey("authorities")) {
+			@SuppressWarnings("unchecked")
+			List<String> authorities = (List<String>) map.get("authorities");
+			List<String> au = new ArrayList<String>();
 			for (String string : authorities) {
 				Role role = new Role();
 				role = roleMapper.getRoleByRole_name(string);
@@ -257,7 +265,7 @@ public class UserResource {
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, "user");
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {
-			if (values.getAttribute_key().equals("id")) {
+			if (values.getAttribute_key().equals("id") && !values.getValue().equals("1")) {
 				Map<String, Object> map = new HashMap<String, Object>();
 				for (Attribute_values values2 : list) {
 					if (values2.getUuid().equals(values.getValue())) {
@@ -378,10 +386,14 @@ public class UserResource {
 		if (values == null) {
 			throw new InternalServerErrorException("所删用户不存在！");
 		}
-		Attribute_values attribute_values = new Attribute_values();
-		attribute_values.setResource_name("user");
-		attribute_values.setUuid(values.getUuid());
-		attribute_valuesMapper.deleteAttribute_valuesByResource_nameAndUuid(attribute_values);
+		if (!values.getUuid().equals("1")) {
+			Attribute_values attribute_values = new Attribute_values();
+			attribute_values.setResource_name("user");
+			attribute_values.setUuid(values.getUuid());
+			attribute_valuesMapper.deleteAttribute_valuesByResource_nameAndUuid(attribute_values);
+		} else {
+			throw new InternalServerErrorException("不能删除管理员！");
+		}
 		return ResponseEntity.ok().headers(HeaderUtil.createAlert("userManagement.deleted", login)).build();
 	}
 
@@ -392,10 +404,12 @@ public class UserResource {
 	@ApiParam(name = "ids", value = "参数类型为String[],为用户id的数组", required = true)
 	public void deleteUserByMore(@RequestBody String[] ids) {
 		for (String id : ids) {
-			Attribute_values attribute_values = new Attribute_values();
-			attribute_values.setResource_name("user");
-			attribute_values.setUuid(id);
-			attribute_valuesMapper.deleteAttribute_valuesByResource_nameAndUuid(attribute_values);
+			if (!id.equals("1")) {
+				Attribute_values attribute_values = new Attribute_values();
+				attribute_values.setResource_name("user");
+				attribute_values.setUuid(id);
+				attribute_valuesMapper.deleteAttribute_valuesByResource_nameAndUuid(attribute_values);
+			}
 		}
 
 	}
@@ -415,7 +429,7 @@ public class UserResource {
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_name(attribute_values);
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {
-			if (values.getAttribute_key().equals("id")) {
+			if (values.getAttribute_key().equals("id") && !values.getValue().equals("1")) {
 				Map<String, Object> map = new HashMap<String, Object>();
 				for (Attribute_values values2 : list) {
 					if (values2.getUuid().equals(values.getValue())) {
@@ -517,7 +531,9 @@ public class UserResource {
 		}
 		String ListID = "";
 		for (String string : uuids) {
-			ListID += "\"" + string + "\",";
+			if (!string.equals("1")) {
+				ListID += "\"" + string + "\",";
+			}
 		}
 		if (!ListID.equals("")) {
 			ListID = ListID.substring(0, ListID.length() - 1);
@@ -525,7 +541,7 @@ public class UserResource {
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, "user");
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {
-			if (values.getAttribute_key().equals("id")) {
+			if (values.getAttribute_key().equals("id") && !values.getValue().equals("1")) {
 				Map<String, Object> map2 = new HashMap<String, Object>();
 				for (Attribute_values values2 : list) {
 					if (values2.getUuid().equals(values.getValue())) {
