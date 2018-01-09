@@ -197,7 +197,7 @@ public interface Attribute_valuesMapper {
 	 * @return
 	 */
 	@Select("select uuid from attribute_values where resource_name=#{attribute_values.resource_name} "
-			+ "AND attribute_key =#{attribute_values.attribute_key} and value like ${sql}")
+			+ "AND attribute_key =#{attribute_values.attribute_key} and value COLLATE utf8_general_ci like ${sql}")
 	public List<String> findAttribute_valuesByKeyAndValue(@Param("attribute_values") Attribute_values attribute_values,
 			@Param("sql") String sql);
 

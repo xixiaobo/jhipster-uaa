@@ -3,6 +3,7 @@ package com.hcycom.jhipster.web.rest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -344,6 +345,8 @@ public class UserResource {
 		Set<String> groupnames = new HashSet<>();
 		if (map.containsKey("groups")) {
 			String[] groupids = ((String) map.get("groups")).split(",");
+			List<String> listGroup=new ArrayList<String>(Arrays.asList(groupids));
+			map.put("groups", listGroup);
 			for (String groupid : groupids) {
 				Group group = groupMapper.getGroupById(groupid);
 				if (group != null) {
@@ -524,7 +527,8 @@ public class UserResource {
 			Attribute_values attribute_values = new Attribute_values();
 			attribute_values.setResource_name("user");
 			attribute_values.setAttribute_key(key);
-			String sql = "\"%" + map.get(key) + "%\"";
+			String value=map.get(key)+"";
+			String sql = "\"%" + value.replace(" ", "") + "%\"";
 			List<String> list2 = attribute_valuesMapper.findAttribute_valuesByKeyAndValue(attribute_values, sql);
 			list2.removeAll(uuids);
 			uuids.addAll(list2);

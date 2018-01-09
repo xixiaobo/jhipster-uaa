@@ -160,12 +160,21 @@ public class AccountResource {
 	 */
 	@GetMapping("/activate")
 	@Timed
-	@ApiOperation(value = "激活用户", notes = "将未激活或用户激活，无权限控制", httpMethod = "GET")
-	@ApiParam(required = true, name = "username", value = "传入要激活的用户名")
-	public void activateAccount(@RequestParam(value = "username") String username) {
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/activate--GET')")
+	@ApiOperation(value = "激活用户", notes = "改变为未激活或用户激活", httpMethod = "GET")
+	public void activateAccount(@RequestParam(value = "username") String username,
+			@RequestParam(value = "status", required = false) String status) {
 		Attribute_values attribute_values = attribute_valuesMapper.findIdByName("user", username);
 		attribute_values.setAttribute_key("status");
-		attribute_values.setValue("1");
+		if (status == null) {
+			attribute_values.setValue("1");
+		} else if (status.equals("1")) {
+			attribute_values.setValue("1");
+		} else if (status.equals("0")) {
+			attribute_values.setValue("0");
+		} else {
+			attribute_values.setValue("1");
+		}
 		attribute_valuesMapper.updateAttribute_values(attribute_values);
 
 	}

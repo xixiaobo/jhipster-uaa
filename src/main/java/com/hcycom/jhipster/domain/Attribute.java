@@ -9,6 +9,7 @@ public class Attribute {
 	private String attribute_key;	//属性key，主键，唯一
 	private String attribute_name;	//属性名称
 	private String attribute_type;	//属性值类型(字符，日期，数字，布尔，枚举，外键)
+	private String attribute_validate;
 	private String format_str;	//属性格式化字符串
 	private int is_delete;	//是否可以删除（0：是；1：否）
 	private int is_enable;	//是否在页面显示（0：是；1：否）
@@ -33,6 +34,13 @@ public class Attribute {
 	}
 	public void setAttribute_type(String attribute_type) {
 		this.attribute_type = attribute_type;
+	}
+	
+	public String getAttribute_validate() {
+		return attribute_validate;
+	}
+	public void setAttribute_validate(String attribute_validate) {
+		this.attribute_validate = attribute_validate;
 	}
 	public String getFormat_str() {
 		return format_str;
@@ -81,9 +89,10 @@ public class Attribute {
 	@Override
 	public String toString() {
 		return "Attribute [attribute_key=" + attribute_key + ", attribute_name=" + attribute_name + ", attribute_type="
-				+ attribute_type + ", format_str=" + format_str + ", is_delete=" + is_delete + ", is_enable="
-				+ is_enable + ", attribute_status=" + attribute_status + ", order=" + order + ", resource_name="
-				+ resource_name + ", resource_name_foreign=" + resource_name_foreign + "]";
+				+ attribute_type + ", attribute_validate=" + attribute_validate + ", format_str=" + format_str
+				+ ", is_delete=" + is_delete + ", is_enable=" + is_enable + ", attribute_status=" + attribute_status
+				+ ", order=" + order + ", resource_name=" + resource_name + ", resource_name_foreign="
+				+ resource_name_foreign + "]";
 	}
 	
 }

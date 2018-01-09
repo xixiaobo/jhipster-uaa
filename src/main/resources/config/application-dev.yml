@@ -33,9 +33,9 @@ spring:
         serialization.indent_output: true
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:mysql://47.96.22.206:3506/Ntopia?useUnicode=true&characterEncoding=utf8&useSSL=false
-        username: Ntopia
-        password: Ntopia@123
+        url: jdbc:mysql://127.0.0.1:3306/Ntopia?useUnicode=true&characterEncoding=utf8&useSSL=false
+        username: root
+        password: hcycom!@#
         
         hikari:
             data-source-properties:

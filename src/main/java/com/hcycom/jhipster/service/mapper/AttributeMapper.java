@@ -27,7 +27,7 @@ public interface AttributeMapper {
 	 */
 	@Insert("INSERT INTO attribute VALUES "
 			+ "(#{attribute.attribute_key},#{attribute.attribute_name},"
-			+ "#{attribute.attribute_type},#{attribute.format_str},"
+			+ "#{attribute.attribute_type},#{attribute.attribute_validate},#{attribute.format_str},"
 			+ "#{attribute.is_delete},#{attribute.is_enable},"
 			+ "#{attribute.attribute_status},#{attribute.order},"
 			+ "#{attribute.resource_name},#{attribute.resource_name_foreign}")
@@ -64,8 +64,8 @@ public interface AttributeMapper {
 	 * @return
 	 */
 	@Update("update attribute set "
-			+ "attribute_name = #{attribute.attribute_name},"
 			+ "attribute_type = #{attribute.attribute_type},"
+			+ "attribute_validate = #{attribute.attribute_validate},"
 			+ "format_str = #{attribute.format_str},"
 			+ "is_enable = #{attribute.is_enable},"
 			+ "attribute_status = #{attribute.attribute_status},"
