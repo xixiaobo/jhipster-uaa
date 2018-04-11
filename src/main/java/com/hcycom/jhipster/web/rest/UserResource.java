@@ -44,6 +44,7 @@ import com.hcycom.jhipster.domain.Role;
 import com.hcycom.jhipster.service.mapper.AttributeMapper;
 import com.hcycom.jhipster.service.mapper.Attribute_valuesMapper;
 import com.hcycom.jhipster.service.mapper.GroupMapper;
+import com.hcycom.jhipster.service.mapper.ResourceMapper;
 import com.hcycom.jhipster.service.mapper.RoleMapper;
 import com.hcycom.jhipster.web.rest.errors.BadRequestAlertException;
 import com.hcycom.jhipster.web.rest.errors.EmailAlreadyUsedException;
@@ -70,6 +71,9 @@ public class UserResource {
 
 	@Autowired
 	private AttributeMapper attributeMapper;
+
+	@Autowired
+	private ResourceMapper resourceMapper;
 
 	@Autowired
 	private GroupMapper groupMapper;
@@ -159,6 +163,8 @@ public class UserResource {
 			attribute_values.setResource_name("user");
 			attribute_values.setAttribute_key(key);
 			attribute_values.setValue(map.get(key) + "");
+			attribute_values.setSave_table(
+					resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 			attribute_valuesMapper.addAttribute_values(attribute_values);
 		}
 
@@ -191,6 +197,7 @@ public class UserResource {
 		Attribute_values value = new Attribute_values();
 		value.setUuid(id);
 		value.setResource_name("user");
+		value.setSave_table(resourceMapper.findResoureByResource_name(value.getResource_name()).getSave_table());
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_nameANDUuid(value);
 		if (list == null) {
 			throw new InternalServerErrorException("User could not be found");
@@ -234,6 +241,8 @@ public class UserResource {
 			attribute_values2.setResource_name("user");
 			attribute_values2.setAttribute_key(key);
 			attribute_values2.setValue(map.get(key) + "");
+			attribute_values2.setSave_table(
+					resourceMapper.findResoureByResource_name(attribute_values2.getResource_name()).getSave_table());
 			attribute_valuesMapper.updateAttribute_values(attribute_values2);
 		}
 		Optional<Map<String, Object>> optional = Optional.of(map);
@@ -254,6 +263,8 @@ public class UserResource {
 	public ResponseEntity<List<Map<String, Object>>> getAllUsers(@ApiParam Pageable pageable) {
 		Attribute_values attribute_values = new Attribute_values();
 		attribute_values.setResource_name("user");
+		attribute_values.setSave_table(
+				resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 		List<String> uuids = attribute_valuesMapper.findAttribute_valuesByPage(pageable, "user");
 
 		String ListID = "";
@@ -263,7 +274,8 @@ public class UserResource {
 		if (!ListID.equals("")) {
 			ListID = ListID.substring(0, ListID.length() - 1);
 		}
-		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, "user");
+
+		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, attribute_values);
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {
 			if (values.getAttribute_key().equals("id") && !values.getValue().equals("1")) {
@@ -345,7 +357,7 @@ public class UserResource {
 		Set<String> groupnames = new HashSet<>();
 		if (map.containsKey("groups")) {
 			String[] groupids = ((String) map.get("groups")).split(",");
-			List<String> listGroup=new ArrayList<String>(Arrays.asList(groupids));
+			List<String> listGroup = new ArrayList<String>(Arrays.asList(groupids));
 			map.put("groups", listGroup);
 			for (String groupid : groupids) {
 				Group group = groupMapper.getGroupById(groupid);
@@ -411,6 +423,8 @@ public class UserResource {
 				Attribute_values attribute_values = new Attribute_values();
 				attribute_values.setResource_name("user");
 				attribute_values.setUuid(id);
+				attribute_values.setSave_table(
+						resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 				attribute_valuesMapper.deleteAttribute_valuesByResource_nameAndUuid(attribute_values);
 			}
 		}
@@ -429,6 +443,8 @@ public class UserResource {
 	public ResponseEntity<Map<String, Object>> getAllUser() {
 		Attribute_values attribute_values = new Attribute_values();
 		attribute_values.setResource_name("user");
+		attribute_values.setSave_table(
+				resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_name(attribute_values);
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {
@@ -483,6 +499,29 @@ public class UserResource {
 	}
 
 	/**
+	 * 获取所有用户
+	 * 
+	 * @return
+	 */
+	@GetMapping("/getUserCount")
+	@Timed
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getUserCount--GET')")
+	@ApiOperation(value = "获取所有用户数量", notes = "获取所有用户数量", httpMethod = "GET")
+	public ResponseEntity<Map<String, Object>> getUserCount() {
+		Attribute_values attribute_values = new Attribute_values();
+		attribute_values.setResource_name("user");
+		attribute_values.setSave_table(
+				resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
+		int num = attribute_valuesMapper.findAttribute_valuesCountByID(attribute_values);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("usercount", num);
+		map.put("msg", "成功获取用户数量！");
+		map.put("error_code", 1);
+
+		return new ResponseEntity<Map<String, Object>>(map, HttpStatus.OK);
+	}
+
+	/**
 	 * 获取所有用户表属性
 	 * 
 	 * @return
@@ -527,7 +566,9 @@ public class UserResource {
 			Attribute_values attribute_values = new Attribute_values();
 			attribute_values.setResource_name("user");
 			attribute_values.setAttribute_key(key);
-			String value=map.get(key)+"";
+			attribute_values.setSave_table(
+					resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
+			String value = map.get(key) + "";
 			String sql = "\"%" + value.replace(" ", "") + "%\"";
 			List<String> list2 = attribute_valuesMapper.findAttribute_valuesByKeyAndValue(attribute_values, sql);
 			list2.removeAll(uuids);
@@ -542,7 +583,11 @@ public class UserResource {
 		if (!ListID.equals("")) {
 			ListID = ListID.substring(0, ListID.length() - 1);
 		}
-		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, "user");
+		Attribute_values attribute_values = new Attribute_values();
+		attribute_values.setResource_name("user");
+		attribute_values.setSave_table(
+				resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
+		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByListID(ListID, attribute_values);
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {
 			if (values.getAttribute_key().equals("id") && !values.getValue().equals("1")) {

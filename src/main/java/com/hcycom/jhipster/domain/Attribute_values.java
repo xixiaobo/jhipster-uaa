@@ -7,6 +7,7 @@ package com.hcycom.jhipster.domain;
  *
  */
 public class Attribute_values {
+	private String save_table; // 存储表名称
 	private String uuid; // uuid
 	private String resource_name; // 资源名称
 	private String attribute_key; // 属性key
@@ -14,6 +15,14 @@ public class Attribute_values {
 
 	public String getUuid() {
 		return uuid;
+	}
+
+	public String getSave_table() {
+		return save_table;
+	}
+
+	public void setSave_table(String save_table) {
+		this.save_table = save_table;
 	}
 
 	public void setUuid(String uuid) {
@@ -36,9 +45,6 @@ public class Attribute_values {
 		this.attribute_key = attribute_key;
 	}
 
-	
-	
-
 	public String getValue() {
 		return value;
 	}
@@ -49,8 +55,8 @@ public class Attribute_values {
 
 	@Override
 	public String toString() {
-		return "Attribute_values [uuid=" + uuid + ", resource_name=" + resource_name + ", attribute_key="
-				+ attribute_key + ", value=" + value + "]";
+		return "Attribute_values [save_table=" + save_table + ", uuid=" + uuid + ", resource_name=" + resource_name
+				+ ", attribute_key=" + attribute_key + ", value=" + value + "]";
 	}
 
 }

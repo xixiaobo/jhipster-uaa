@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +35,7 @@ import com.hcycom.jhipster.domain.Role;
 import com.hcycom.jhipster.security.SecurityUtils;
 import com.hcycom.jhipster.service.mapper.Attribute_valuesMapper;
 import com.hcycom.jhipster.service.mapper.GroupMapper;
+import com.hcycom.jhipster.service.mapper.ResourceMapper;
 import com.hcycom.jhipster.service.mapper.RoleMapper;
 import com.hcycom.jhipster.web.rest.errors.EmailAlreadyUsedException;
 import com.hcycom.jhipster.web.rest.errors.InternalServerErrorException;
@@ -61,13 +63,16 @@ public class AccountResource {
 
 	private final RoleMapper roleMapper;
 
+
+	private final ResourceMapper resourceMapper;
+
 	@Autowired
 	private GroupMapper groupMapper;
 
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-	public AccountResource(Attribute_valuesMapper attribute_valuesMapper, RoleMapper roleMapper) {
-
+	public AccountResource(ResourceMapper resourceMapper,Attribute_valuesMapper attribute_valuesMapper, RoleMapper roleMapper) {
+		this.resourceMapper = resourceMapper;
 		this.attribute_valuesMapper = attribute_valuesMapper;
 		this.roleMapper = roleMapper;
 	}
@@ -146,6 +151,7 @@ public class AccountResource {
 			attribute_values.setResource_name("user");
 			attribute_values.setAttribute_key(key);
 			attribute_values.setValue(map.get(key) + "");
+			attribute_values.setSave_table(resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 			attribute_valuesMapper.addAttribute_values(attribute_values);
 		}
 	}
@@ -175,6 +181,7 @@ public class AccountResource {
 		} else {
 			attribute_values.setValue("1");
 		}
+		attribute_values.setSave_table(resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 		attribute_valuesMapper.updateAttribute_values(attribute_values);
 
 	}
@@ -262,6 +269,7 @@ public class AccountResource {
 		if (attribute_values == null) {
 			throw new InternalServerErrorException("User could not be found");
 		}
+		attribute_values.setSave_table(resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 		if (map.containsKey("name_cn")) {
 			attribute_values.setAttribute_key("name_cn");
 			attribute_values.setValue(map.get("name_cn"));
@@ -301,10 +309,46 @@ public class AccountResource {
 		if (attribute_values == null) {
 			throw new InternalServerErrorException("User could not be found");
 		}
+		attribute_values.setSave_table(resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 		String encryptedPassword = passwordEncoder.encode(password);
 		attribute_values.setAttribute_key("password");
 		attribute_values.setValue(encryptedPassword);
 		attribute_valuesMapper.updateAttribute_values(attribute_values);
+	}
+	
+	/**
+	 * POST /account/change-password : changes the current user's password
+	 *
+	 * @param password
+	 *            the new password
+	 * @throws InvalidPasswordException
+	 *             400 (Bad Request) if the new password is incorrect
+	 */
+	@GetMapping(path = "/account/validate-password")
+	@Timed
+	@ApiOperation(value = "验证当前登录用户的密码", httpMethod = "GET", notes = "验证当前登录用户的密码，无权限控制")
+	@ApiParam(required = true, name = "password", value = "传入密码直接验证")
+	public ResponseEntity<Map<String, Object>> validatePassword(@RequestParam("password") String password) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		log.info("\n结束到的参数："+password);
+		final String userLogin = SecurityUtils.getCurrentUserLogin();
+		List<Attribute_values> list = attribute_valuesMapper.findUserByName("user", userLogin);
+		if (list == null) {
+			throw new InternalServerErrorException("User could not be found");
+		}
+		Map<String, Object> user = new HashMap<String, Object>();
+		for (Attribute_values attribute_values : list) {
+			user.put(attribute_values.getAttribute_key(), attribute_values.getValue());
+		}
+		boolean fur=passwordEncoder.matches(password, user.getOrDefault("password", "").toString());
+		if(fur){
+			map.put("msg", "密码验证正确！");
+			map.put("error_code", 1);
+		}else{
+			map.put("msg", "密码验证错误！");
+			map.put("error_code", 0);			
+		}
+		return new ResponseEntity<Map<String, Object>>(map, HttpStatus.OK);
 	}
 
 	/**
@@ -351,6 +395,7 @@ public class AccountResource {
 		if (attribute_values == null) {
 			throw new InternalServerErrorException("User could not be found");
 		}
+		attribute_values.setSave_table(resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
 		String encryptedPassword = passwordEncoder.encode(usernameAndPassword.getNewPassword());
 		attribute_values.setAttribute_key("password");
 		attribute_values.setValue(encryptedPassword);
@@ -360,4 +405,11 @@ public class AccountResource {
 	private static boolean checkPasswordLength(String password) {
 		return !StringUtils.isEmpty(password) && password.length() >= 4 && password.length() <= 100;
 	}
+	
+	/**
+	 * passwordEncoder.matches(b, a); 验证密码是否正确，a为加密密码，b为未加密密码
+	 * passwordEncoder.encode(a);将字符串a加密
+	 * 
+	 */
+	
 }

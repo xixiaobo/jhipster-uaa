@@ -1,12 +1,13 @@
-﻿attribute_key;attribute_name;attribute_type;format_str;is_delete;is_enable;attribute_status;order;resource_name_foreign
-email;邮箱;string;;1;0;0;5;user
-groups;群组;string; ;1;0;0;8;user
-head_image;头像;string; ;1;0;0;4;user
-id;用户id;string;  ;1;0;0;0;user
-name_cn;中文名;string; ;1;0;0;2;user
-password;密码;string; ;1;0;0;3;user
-phone;电话;string; ;1;0;0;6;user
-roles;角色;string; ;1;0;0;9;user
-sex;性别;string; ;1;0;0;7;user
-status;状态;int; ;1;0;0;8;user
-username;用户名称;string; ;1;0;0;1;user
+﻿attribute_key;attribute_name;attribute_type;attribute_validate;format_str;is_delete;is_enable;attribute_status;order;resource_name;resource_name_foreign
+"email;邮箱;input;[{""required"": true, ""message"": ""邮箱不能为空"", ""trigger"": ""blur""},{""type"": ""email"", ""message"": ""邮箱格式不正确"", ""trigger"": ""blur""}];;1;1;0;5;user;null"
+groups;群组;string;; ;1;0;0;8;user;null
+head_image;头像;string;; ;1;0;0;4;user;null
+id;用户id;string;;  ;1;0;0;0;user;null
+"name_cn;中文名;input;[{""required"": true, ""message"": ""中文名不能为空"", ""trigger"": ""blur""}]; ;1;1;0;2;user;null"
+"password;密码;password;[{""required"": true, ""message"": ""密码不能为空"", ""trigger"": ""blur""}]; ;1;3;0;3;user;null"
+"phone;电话;input;[{""required"": true, ""message"": ""电话号码不能为空"", ""trigger"": ""blur""},{""message"": ""请输入正确的电话号码"", ""pattern"":  ""/^1[3|4|5|8][0-9]\\d{4,8}$/"", ""trigger"": ""blur""}]; ;1;1;0;6;user;null"
+roles;角色;string;; ;1;4;0;9;user;null
+routerpath;路由地址;string; ; ;1;1;0;1;viewinfo;null
+"sex;性别;RadioGroup;[{""required"": true, ""message"": ""用户名称不能为空"", ""trigger"": ""blur""}]; ;1;4;0;7;user;null"
+status;状态;int;; ;1;4;0;8;user;null
+"username;用户名称;input;[{""required"": true, ""message"": ""用户名称不能为空"", ""trigger"": ""blur""},{""message"": ""姓名不能为中文"", ""pattern"":  ""/^[0-9a-zA_Z]+$/"", ""trigger"": ""blur""}]; ;1;2;0;1;user;null"

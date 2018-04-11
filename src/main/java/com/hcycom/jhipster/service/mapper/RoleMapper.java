@@ -35,16 +35,9 @@ public interface RoleMapper {
 	 * @param role
 	 * @return
 	 */
-	@Delete("delete from role where uuid=#{role.uuid}")
+	@Delete("DELETE r, ra FROM	role r LEFT JOIN role_authority ra ON r.uuid = ra.role_uuid WHERE r.uuid=#{role.uuid}")
 	public int deleteRole(@Param("role") Role role);
 	
-	/**
-	 * 根据角色的uuid删除角色的所属权限
-	 * @param role
-	 * @return
-	 */
-	@Delete("delete from role_authority where role_uuid=#{role.uuid}")
-	public int deleteRole_Auth(@Param("role") Role role);
 
 	/**
 	 * 根据uuid查询角色信息
@@ -69,5 +62,13 @@ public interface RoleMapper {
 	 */
 	@Select("select * from role")
 	public List<Role> getAllAuthority();
+	
+	/**
+	 * 模糊查询角色
+	 * @param role_name
+	 * @return
+	 */
+	@Select("select * from role where role_name COLLATE utf8_general_ci like #{role_name}")
+	public List<Role> getAuthoritybyLike(@Param("role_name") String role_name);
 
 }

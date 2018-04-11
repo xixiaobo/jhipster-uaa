@@ -10,81 +10,117 @@
 
 	<!-- JHipster core tables. The initial schema has the '00000000000001' id, 
 		so that it is over-written if we re-generate it. -->
-	<changeSet id="00000000000001" author="jhipster">
-		<createTable tableName="resource">
-			<column name="resource_name" type="varchar(45)">
-				<constraints primaryKey="true" nullable="false" />
-			</column>
-			<column name="visible_name" type="varchar(128)">
-				<constraints nullable="false" />
-			</column>
-			<column name="resource_desc" type="varchar(128)">
-				<constraints nullable="false" />
-			</column>
-			<column name="is_delete" type="int">
-				<constraints nullable="false" />
-			</column>
-			<column name="save_table" type="varchar(45)">
-				<constraints nullable="false" />
-			</column>
-		</createTable>
-
+	<changeSet id="00000000001420" author="jhipsteruaa">
 		<createTable tableName="attribute">
 			<column name="attribute_key" type="varchar(45)">
 				<constraints primaryKey="true" nullable="false" />
 			</column>
 			<column name="attribute_name" type="varchar(45)">
-				<constraints nullable="false" />
 			</column>
 			<column name="attribute_type" type="varchar(128)">
-				<constraints nullable="false" />
+			</column>
+			<column name="attribute_validate" type="longtext">
 			</column>
 			<column name="format_str" type="varchar(128)">
-				<constraints nullable="false" />
 			</column>
 			<column name="is_delete" type="int">
-				<constraints nullable="false" />
 			</column>
 			<column name="is_enable" type="int">
-				<constraints nullable="false" />
 			</column>
 			<column name="attribute_status" type="int">
-				<constraints nullable="false" />
 			</column>
 			<column name="order" type="int">
-				<constraints nullable="false" />
-			</column>
-			<column name="resource_name_foreign" type="varchar(45)">
-				<constraints nullable="false" />
-			</column>
-		</createTable>
-		
-		<createTable tableName="attribute_values">
-			<column name="uuid" type="varchar(45)">
-				<constraints nullable="false" />
 			</column>
 			<column name="resource_name" type="varchar(45)">
-				<constraints nullable="false" />
 			</column>
-			<column name="attribute_key" type="varchar(45)">
-				<constraints nullable="false" />
-			</column>
-			<column name="value" type="varchar(128)">
+			<column name="resource_name_foreign" type="varchar(45)">
 			</column>
 		</createTable>
-		
+
+		<createTable tableName="attribute_values">
+			<column name="uuid" type="varchar(45)">
+			</column>
+			<column name="resource_name" type="varchar(45)">
+			</column>
+			<column name="attribute_key" type="varchar(45)">
+			</column>
+			<column name="value" type="longtext">
+			</column>
+		</createTable>
+
+		<createTable tableName="authority">
+			<column name="uuid" type="varchar(45)">
+			</column>
+			<column name="authority_name" type="varchar(45)">
+			</column>
+			<column name="authority_type" type="varchar(45)">
+			</column>
+			<column name="foreign_uuid" type="varchar(45)">
+			</column>
+			<column name="authority_url" type="varchar(45)">
+			</column>
+			<column name="authority_status" type="int">
+			</column>
+		</createTable>
+
+		<createTable tableName="group">
+			<column name="uuid" type="varchar(45)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="group_name" type="varchar(45)">
+			</column>
+			<column name="group_desc" type="varchar(128)">
+			</column>
+			<column name="group_super" type="int">
+			</column>
+			<column name="group_type" type="int">
+			</column>
+			<column name="group_status" type="int">
+			</column>
+		</createTable>
+
+
+		<createTable tableName="resource">
+			<column name="resource_name" type="varchar(45)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="visible_name" type="varchar(128)">
+			</column>
+			<column name="resource_desc" type="varchar(128)">
+			</column>
+			<column name="is_delete" type="int">
+			</column>
+			<column name="save_table" type="varchar(45)">
+			</column>
+		</createTable>
+
+
 		<createTable tableName="role">
 			<column name="uuid" type="varchar(45)">
 				<constraints primaryKey="true" nullable="false" />
 			</column>
 			<column name="role_name" type="varchar(45)">
-				<constraints nullable="false" />
 			</column>
 			<column name="role_desc" type="varchar(128)">
-				<constraints nullable="false" />
 			</column>
 		</createTable>
-		
+
+
+		<createTable tableName="role_authority">
+			<column autoIncrement="true" name="uuid" type="int"
+				startWith="1">
+				<constraints nullable="false" primaryKey="true"
+					primaryKeyName="pk_t_module_config" />
+			</column>
+			<column name="role_uuid" type="varchar(45)">
+			</column>
+			<column name="authority_uuid" type="varchar(128)">
+			</column>
+			<column name="authority_type" type="varchar(128)">
+			</column>
+		</createTable>
+
+
 
 		<createTable tableName="jhi_persistent_audit_event">
 			<column name="event_id" type="bigint" autoIncrement="${autoIncrement}">
@@ -124,11 +160,9 @@
 			baseTableName="jhi_persistent_audit_evt_data" constraintName="fk_evt_pers_audit_evt_data"
 			referencedColumnNames="event_id" referencedTableName="jhi_persistent_audit_event" />
 
+
 		<loadData encoding="UTF-8" file="config/liquibase/resource.csv"
 			separator=";" tableName="resource">
-		</loadData>
-		<loadData encoding="UTF-8" file="config/liquibase/attribute.csv"
-			separator=";" tableName="attribute">
 		</loadData>
 		<loadData encoding="UTF-8" file="config/liquibase/attribute_values.csv"
 			separator=";" tableName="attribute_values">
