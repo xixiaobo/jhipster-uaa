@@ -448,7 +448,7 @@ public class UserResource {
 		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_name(attribute_values);
 		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
 		for (Attribute_values values : list) {
-			if (values.getAttribute_key().equals("id") && !values.getValue().equals("1")) {
+			if (values.getAttribute_key().equals("id")) {
 				Map<String, Object> map = new HashMap<String, Object>();
 				for (Attribute_values values2 : list) {
 					if (values2.getUuid().equals(values.getValue())) {
@@ -497,6 +497,55 @@ public class UserResource {
 
 		return new ResponseEntity<Map<String, Object>>(map, HttpStatus.OK);
 	}
+	
+	/**
+	 * 获取所有用户基础信息，无权限
+	 * 
+	 * @return
+	 */
+	@GetMapping("/getAllUserOnly")
+	@Timed
+	@ApiOperation(value = "获取所有用户基础信息，无权限", notes = "获取所有用户基础信息，无权限", httpMethod = "GET")
+	public ResponseEntity<Map<String, Object>> getAllUserOnly() {
+		Attribute_values attribute_values = new Attribute_values();
+		attribute_values.setResource_name("user");
+		attribute_values.setSave_table(
+				resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
+		List<Attribute_values> list = attribute_valuesMapper.findAttribute_valuesByResource_name(attribute_values);
+		List<Map<String, Object>> usermap = new ArrayList<Map<String, Object>>();
+		for (Attribute_values values : list) {
+			if (values.getAttribute_key().equals("id")) {
+				Map<String, Object> map = new HashMap<String, Object>();
+				for (Attribute_values values2 : list) {
+					if (values2.getUuid().equals(values.getValue())) {
+						map.put(values2.getAttribute_key(), values2.getValue());
+					}
+				}
+				map.remove("password");
+				map.remove("head_image");
+				map.remove("status");
+				map.remove("groups");
+				map.remove("roles");
+				map.remove("phone");
+				map.remove("email");
+				usermap.add(map);
+			}
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		if (list.size() > 0) {
+			map.put("allUser", usermap);
+			map.put("msg", "成功获取所有用户基础信息！");
+			map.put("error_code", 1);
+		} else if (list.size() == 0) {
+			map.put("msg", "获取所有用户失败或所有用户为空！");
+			map.put("error_code", 0);
+		} else {
+			map.put("msg", "服务器出问题了！");
+			map.put("error_code", 2);
+		}
+
+		return new ResponseEntity<Map<String, Object>>(map, HttpStatus.OK);
+	}
 
 	/**
 	 * 获取所有用户
@@ -505,7 +554,6 @@ public class UserResource {
 	 */
 	@GetMapping("/getUserCount")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getUserCount--GET')")
 	@ApiOperation(value = "获取所有用户数量", notes = "获取所有用户数量", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getUserCount() {
 		Attribute_values attribute_values = new Attribute_values();
@@ -528,7 +576,6 @@ public class UserResource {
 	 */
 	@GetMapping("/allusersTable")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/allusersTable--GET')")
 	@ApiOperation(value = "获取所有用户表属性", notes = "获取所有用户表属性", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getAllUserTable() {
 		Attribute attribute = new Attribute();
