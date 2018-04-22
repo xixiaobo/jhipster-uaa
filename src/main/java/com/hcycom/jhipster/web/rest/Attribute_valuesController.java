@@ -57,7 +57,7 @@ public class Attribute_valuesController {
 
 	@RequestMapping(value = "/attributevalues", method = RequestMethod.POST)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attributevalues--POST')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attributevalues--POST')")
 	@ApiOperation(value = "新增单条资源数据记录接口", notes = "传入单条资源属性值表参数，新增资源数据记录需要传递UUID")
 	public ResponseEntity<Map<String, Object>> attributevalues(@RequestBody Attribute_values attribute_values) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -85,7 +85,7 @@ public class Attribute_valuesController {
 
 	@RequestMapping(value = "/attributevaluesMore", method = RequestMethod.POST)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attributevaluesMore--POST')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attributevaluesMore--POST')")
 	@ApiOperation(value = "新增多条资源数据记录接口", notes = "传入资源名称、uuid和多条资源属性值表参数，新增资源数据记录需要传递UUID")
 	public ResponseEntity<Map<String, Object>> attributevaluesMore(@RequestBody Map<String, Object> map) {
 		Map<String, Object> map2 = new HashMap<String, Object>();
@@ -114,7 +114,7 @@ public class Attribute_valuesController {
 
 	@RequestMapping(value = "/attributevalues_update", method = RequestMethod.PUT)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attributevalues_update--PUT')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attributevalues_update--PUT')")
 	@ApiOperation(value = "修改资源数据记录", notes = "传入资源数据记录参数，根据资源数据记录的uuid、资源数据记录属性key和资源名称修改资源数据记录")
 	public ResponseEntity<Map<String, Object>> attributevalues_update(@RequestBody Map<String, Object> map) {
 		Map<String, Object> map2 = new HashMap<String, Object>();
@@ -144,7 +144,7 @@ public class Attribute_valuesController {
 
 	@RequestMapping(value = "/attributevalues_deleteByUUID", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attributevalues_deleteByUUID--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attributevalues_deleteByUUID--DELETE')")
 	@ApiOperation(value = "根据UUID删除资源数据记录", notes = "传入资源数据记录参数，根据资源数据记录的uuid和资源名称删除资源数据记录")
 	public ResponseEntity<Map<String, Object>> attributevalues_deleteByUUID(
 			@RequestBody Attribute_values attribute_values) {
@@ -173,7 +173,7 @@ public class Attribute_valuesController {
 
 	@RequestMapping(value = "/attributevalues_deleteByUUIDMore", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attributevalues_deleteByUUIDMore--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attributevalues_deleteByUUIDMore--DELETE')")
 	@ApiOperation(value = "批量删除资源数据记录", notes = "根据UUID以及资源名称集合批量删除资源数据记录")
 	public ResponseEntity<Map<String, Object>> attributevalues_deleteByUUIDMore(
 			@RequestBody List<Attribute_values> attribute_valuesMore) {
@@ -195,7 +195,7 @@ public class Attribute_valuesController {
 
 	@RequestMapping(value = "/attributevalues_deleteByOnly", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attributevalues_deleteByOnly--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attributevalues_deleteByOnly--DELETE')")
 	@ApiOperation(value = "根据UUID以及属性key删除资源数据记录", notes = "传入资源数据记录参数，根据资源数据记录的uuid、属性key和资源名称删除资源数据记录")
 	public ResponseEntity<Map<String, Object>> attributevalues_deleteByOnly(
 			@RequestBody Attribute_values attribute_values) {
@@ -224,7 +224,7 @@ public class Attribute_valuesController {
 
 	@RequestMapping(value = "/attributevalues_get", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attributevalues_get--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attributevalues_get--GET')")
 	@ApiOperation(value = "获取资源数据记录", notes = "传入资源数据记录参数，根据资源数据记录的uuid和资源名称获取资源数据记录,如果不传uuid则根据资源名称获取资源记录")
 	public ResponseEntity<Map<String, Object>> attributevalues_get(
 			@RequestParam(value = "uuid", required = false) String uuid,
@@ -299,7 +299,7 @@ public class Attribute_valuesController {
 
 	@RequestMapping(value = "/attributevalues_getByKey", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attributevalues_getByKey--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attributevalues_getByKey--GET')")
 	@ApiOperation(value = "获取资源数据记录", notes = "传入资源数据记录参数，根据资源数据记录的uuid和资源名称获取资源数据记录,如果不传uuid则根据资源名称获取资源记录")
 	public ResponseEntity<Map<String, Object>> attributevalues_getByKey(@RequestParam(value = "key") String key,
 			@RequestParam(value = "value") String value, @RequestParam(value = "resource_name") String resource_name) {
@@ -348,7 +348,7 @@ public class Attribute_valuesController {
 	 */
 	@PostMapping("/getattribute_valuesByLike")
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/getattribute_valuesByLike--POST')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getattribute_valuesByLike--POST')")
 	@ApiOperation(value = "获取筛选资源属性值", notes = "获取筛选后资源属性值,map:{\"resource_name\":\"你所要查询的资源\",\"你所要查询的字段\":\"你所要查询的值\"},可以查询多个字段", httpMethod = "POST")
 	public ResponseEntity<Map<String, Object>> getusersByLike(
 			@ApiParam(name = "筛选资源属性值", value = "参数模型：{\"resource_name\":\"你所要查询的资源\",\"你所要查询的字段\":\"你所要查询的值\"}") @RequestBody Map<String, Object> map) {
@@ -423,31 +423,5 @@ public class Attribute_valuesController {
 
 		return new ResponseEntity<Map<String, Object>>(map3, HttpStatus.OK);
 	}
-
-	// @RequestMapping(value = "/attributevalues_getAll", method =
-	// RequestMethod.GET)
-	// @Timed
-	// @PreAuthorize("@InterfacePermissions.hasPermission(authentication,
-	// 'usermodule/api/attributevalues_getAll--GET')")
-	// @ApiOperation(value = "获取资源数据记录", notes =
-	// "传入资源数据记录参数，根据资源数据记录的uuid和资源名称获取资源数据记录,如果不传uuid则根据资源名称获取资源记录")
-	// public ResponseEntity<Map<String, Object>> attributevalues_getAll() {
-	// Map<String, Object> map = new HashMap<String, Object>();
-	// List<Attribute_values> list =
-	// attribute_valuesMapper.findAttribute_valuesAll();
-	// if (list.size() > 0) {
-	// map.put("data", list);
-	// map.put("msg", "查询所有属性成功！");
-	// map.put("error_code", 1);
-	// } else if (list.size() <= 0) {
-	// map.put("msg", "查询所有属性失败或查询结果为空！");
-	// map.put("error_code", 0);
-	// } else {
-	// map.put("msg", "服务器错误");
-	// map.put("error_code", 2);
-	// }
-	//
-	// return new ResponseEntity<Map<String, Object>>(map, HttpStatus.OK);
-	// }
 
 }

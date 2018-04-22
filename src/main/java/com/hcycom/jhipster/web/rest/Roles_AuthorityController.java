@@ -55,7 +55,7 @@ public class Roles_AuthorityController {
 
 	@RequestMapping(value = "/role_authority", method = RequestMethod.POST)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/role_authority--POST')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/role_authority--POST')")
 	@ApiOperation(value = "更改角色权限", notes = "传入角色id以及权限id数组，更新角色所拥有的权限", httpMethod = "POST")
 	public ResponseEntity<Map<String, Object>> role_authority(@RequestBody Role_authoritys role_authoritys) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -92,7 +92,7 @@ public class Roles_AuthorityController {
 
 	@RequestMapping(value = "/role_authority_delete", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication,'usermodule/api/role_authority_delete--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication,'jhipsteruaa/api/role_authority_delete--DELETE')")
 	@ApiOperation(value = "删除角色权限", notes = "根据角色id和权限id删除角色权限", httpMethod = "DELETE")
 	public ResponseEntity<Map<String, Object>> role_authority_delete(@RequestBody Role_authoritys role_authoritys) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -115,7 +115,7 @@ public class Roles_AuthorityController {
 
 	@RequestMapping(value = "/role_authority_deleteByMore", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication,'usermodule/api/role_authority_deleteByMore--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication,'jhipsteruaa/api/role_authority_deleteByMore--DELETE')")
 	@ApiOperation(value = "删除多个角色权限", notes = "根据角色id和权限id数组删除角色所拥有的权限", httpMethod = "DELETE")
 	public ResponseEntity<Map<String, Object>> role_authority_deleteByMore(@RequestBody Role_authoritys role_authoritys) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -141,7 +141,7 @@ public class Roles_AuthorityController {
 	
 	@RequestMapping(value = "/role_authority_deleteByAll", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication,'usermodule/api/role_authority_deleteByAll--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication,'jhipsteruaa/api/role_authority_deleteByAll--DELETE')")
 	@ApiOperation(value = "删除角色所有权限", notes = "根据角色id删除角色所拥有的所有权限", httpMethod = "DELETE")
 	public ResponseEntity<Map<String, Object>> role_authority_deleteByAll(@RequestBody String roleid) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -163,7 +163,7 @@ public class Roles_AuthorityController {
 	// RequestMethod.GET)
 	// @Timed
 	// @PreAuthorize("@InterfacePermissions.hasPermission(authentication,
-	// 'usermodule/api/role_authority_get/{uuid}')")
+	// 'jhipsteruaa/api/role_authority_get/{uuid}')")
 	// @ApiOperation(value = "获取角色权限记录详情", notes =
 	// "传入角色权限记录id，根据id获取角色权限记录详情",httpMethod="GET")
 	// public ResponseEntity<Map<String, Object>>
@@ -191,7 +191,7 @@ public class Roles_AuthorityController {
 
 	@RequestMapping(value = "/getRoleAuthorityByInterface/{roleid}", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/getRoleAuthorityByInterface/{roleid}--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getRoleAuthorityByInterface/{roleid}--GET')")
 	@ApiOperation(value = "获取角色的接口权限", notes = "获取角色拥有的所有接口权限", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getRoleAuthorityByInterface(@PathVariable String roleid) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -235,7 +235,7 @@ public class Roles_AuthorityController {
 	
 	@RequestMapping(value = "/getRoleAuthorityByProduct/{roleid}", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/getRoleAuthorityByProduct/{roleid}--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getRoleAuthorityByProduct/{roleid}--GET')")
 	@ApiOperation(value = "获取角色的产品权限", notes = "获取角色拥有的所有产品权限", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getRoleAuthorityByProduct(@PathVariable String roleid,@RequestParam(value="authority_type") String authority_type) {
 		Map<String, Object> map = new HashMap<String, Object>();

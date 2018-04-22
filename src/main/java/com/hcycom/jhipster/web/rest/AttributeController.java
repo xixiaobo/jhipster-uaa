@@ -46,7 +46,7 @@ public class AttributeController {
 
 	@RequestMapping(value = "/attribute", method = RequestMethod.POST)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attribute--POST')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attribute--POST')")
 	@ApiOperation(value = "创建资源属性", notes = "传入资源属性表参数，创建资源属性")
 	public ResponseEntity<Map<String, Object>> attribute(@RequestBody Attribute attribute) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -69,7 +69,7 @@ public class AttributeController {
 
 	@RequestMapping(value = "/attribute_update", method = RequestMethod.PUT)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attribute_update--PUT')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attribute_update--PUT')")
 	@ApiOperation(value = "修改资源属性", notes = "传入资源属性表参数，根据资源属性key和资源名称修改资源属性")
 	public ResponseEntity<Map<String, Object>> attribute_update(@RequestBody Attribute attribute) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -92,7 +92,7 @@ public class AttributeController {
 
 	@RequestMapping(value = "/attribute_delete", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attribute_delete--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attribute_delete--DELETE')")
 	@ApiOperation(value = "删除资源属性", notes = "传入资源属性表参数，根据资源属性key和资源名称删除资源属性")
 	public ResponseEntity<Map<String, Object>> attribute_delete(@RequestBody Map<String, String> map) {
 		Map<String, Object> re = new HashMap<String, Object>();
@@ -132,7 +132,7 @@ public class AttributeController {
 
 	@RequestMapping(value = "/attribute_get", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attribute_get--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attribute_get--GET')")
 	@ApiOperation(value = "获取资源属性", notes = "传入资源属性表参数，根据资源属性key和资源名称获取资源，若属性key为空返回所有指定资源名称的属性详情")
 	public ResponseEntity<Map<String, Object>> attribute_get(
 			@RequestParam(value = "attribute_key", required = true) String attribute_key,
@@ -160,7 +160,7 @@ public class AttributeController {
 
 	@RequestMapping(value = "/attribute_getAll", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/attribute_getAll--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/attribute_getAll--GET')")
 	@ApiOperation(value = "获取资源属性", notes = "传入资源属性表参数，根据资源属性key和资源名称获取资源")
 	public ResponseEntity<Map<String, Object>> attribute_getAll() {
 		Map<String, Object> map = new HashMap<String, Object>();

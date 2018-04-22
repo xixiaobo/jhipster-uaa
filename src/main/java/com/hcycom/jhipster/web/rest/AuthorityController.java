@@ -43,7 +43,7 @@ public class AuthorityController {
 	
 	@RequestMapping(value = "/InterfaceAuthority", method = RequestMethod.POST)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/InterfaceAuthority--POST')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/InterfaceAuthority--POST')")
 	@ApiOperation(value = "添加接口权限", notes = "添加接口权限记录", httpMethod = "POST")
 	public ResponseEntity<Map<String, Object>> InterfaceAuthority(@RequestBody Authority authority) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -67,7 +67,7 @@ public class AuthorityController {
 	
 	@RequestMapping(value = "/deleteInterfaceAuthority", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/deleteInterfaceAuthority--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/deleteInterfaceAuthority--DELETE')")
 	@ApiOperation(value = "删除接口权限", notes = "删除接口权限记录", httpMethod = "DELETE")
 	public ResponseEntity<Map<String, Object>> deleteInterfaceAuthority(@RequestBody String authuuid) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -87,7 +87,7 @@ public class AuthorityController {
 	
 	@RequestMapping(value = "/deleteInterfaceAuthorityByMore", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/deleteInterfaceAuthorityByMore--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/deleteInterfaceAuthorityByMore--DELETE')")
 	@ApiOperation(value = "批量删除接口权限", notes = "批量删除接口权限记录", httpMethod = "DELETE")
 	public ResponseEntity<Map<String, Object>> deleteInterfaceAuthorityByMore(@RequestBody String[] authuuids) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -111,7 +111,7 @@ public class AuthorityController {
 
 	@RequestMapping(value = "/getAllInterfaceAuthority", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/getAllInterfaceAuthority--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getAllInterfaceAuthority--GET')")
 	@ApiOperation(value = "获取所有接口权限", notes = "获取所有接口权限记录", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getAllInterfaceAuthority() {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -137,7 +137,7 @@ public class AuthorityController {
 	
 	@RequestMapping(value = "/getAllAuthorityByAuthority_type", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/getAllViewsAuthority--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getAllViewsAuthority--GET')")
 	@ApiOperation(value = "根据权限类型获取所有权限", notes = "根据权限类型获取所有权限记录", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getAllViewsAuthority(@RequestParam(value = "authority_type") String authority_type) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -159,7 +159,7 @@ public class AuthorityController {
 	
 	@RequestMapping(value = "/getAllAuthority", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/getAllAuthority--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getAllAuthority--GET')")
 	@ApiOperation(value = "获取所有权限", notes = "获取所有权限记录", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getAllAuthority() {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -181,7 +181,7 @@ public class AuthorityController {
 	
 	@RequestMapping(value = "/getAllAuthorityByLike", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/getAllAuthorityByLike--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getAllAuthorityByLike--GET')")
 	@ApiOperation(value = "获取查询权限", notes = "获取查询权限记录，若记录类型为空则获取所有类型权限", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getAllAuthorityByLike(@RequestParam(value = "authority_name") String authority_name,
 			@RequestParam(value = "authority_type", required = false) String authority_type) {

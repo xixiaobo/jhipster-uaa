@@ -51,7 +51,7 @@ public class RolesController {
 
 	@RequestMapping(value = "/role", method = RequestMethod.POST)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/role--POST')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/role--POST')")
 	@ApiOperation(value = "创建角色", notes = "传入角色表参数，创建角色", httpMethod = "POST")
 	public ResponseEntity<Map<String, Object>> role(@RequestBody Role role) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -82,7 +82,7 @@ public class RolesController {
 
 	@RequestMapping(value = "/role_update", method = RequestMethod.PUT)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/role_update--PUT')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/role_update--PUT')")
 	@ApiOperation(value = "修改角色", notes = "传入角色表参数，根据角色id修改角色", httpMethod = "PUT")
 	public ResponseEntity<Map<String, Object>> role_update(@RequestBody Role role) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -115,7 +115,7 @@ public class RolesController {
 
 	@RequestMapping(value = "/role_delete/{uuid}", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/role_delete/{uuid}--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/role_delete/{uuid}--DELETE')")
 	@ApiOperation(value = "删除角色", notes = "传入角色表参数，根据角色id删除角色", httpMethod = "DELETE")
 	public ResponseEntity<Map<String, Object>> role_delete(@PathVariable String uuid) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -150,7 +150,7 @@ public class RolesController {
 
 	@RequestMapping(value = "/role_deleteByMore", method = RequestMethod.DELETE)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/role_deleteByMore--DELETE')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/role_deleteByMore--DELETE')")
 	@ApiOperation(value = "批量删除角色", notes = "根据角色id数组，批量删除角色", httpMethod = "DELETE")
 	public ResponseEntity<Map<String, Object>> role_deleteByMore(@RequestBody String[] uuids) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -181,7 +181,7 @@ public class RolesController {
 
 	@RequestMapping(value = "/role_get/{uuid}", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/role_get/{uuid}--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/role_get/{uuid}--GET')")
 	@ApiOperation(value = "获取角色", notes = "传入资源表参数，根据角色id获取角色", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> resource_get(@PathVariable String uuid) {
 		log.info("request roleuuid：" + uuid);
@@ -202,7 +202,7 @@ public class RolesController {
 
 	@RequestMapping(value = "/role_getAll", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/role_getAll--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/role_getAll--GET')")
 	@ApiOperation(value = "获取所有角色", notes = "获取所有角色", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> resource_getAll() {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -224,7 +224,7 @@ public class RolesController {
 
 	@RequestMapping(value = "/getRoleByLike", method = RequestMethod.GET)
 	@Timed
-	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'usermodule/api/getRoleByLike--GET')")
+	@PreAuthorize("@InterfacePermissions.hasPermission(authentication, 'jhipsteruaa/api/getRoleByLike--GET')")
 	@ApiOperation(value = "获取筛选角色", notes = "获取筛选角色", httpMethod = "GET")
 	public ResponseEntity<Map<String, Object>> getRoleByLike(@RequestParam("role_name")String role_name) {
 		Map<String, Object> map = new HashMap<String, Object>();
