@@ -296,11 +296,12 @@ public class AccountResource {
 	 * @throws InvalidPasswordException
 	 *             400 (Bad Request) if the new password is incorrect
 	 */
-	@PostMapping(path = "/account/change-password")
+	@GetMapping(path = "/account/change-password")
 	@Timed
-	@ApiOperation(value = "更改当前登录用户的密码", httpMethod = "POST", notes = "更改当前登录用户的密码，无权限控制")
+	@ApiOperation(value = "更改当前登录用户的密码", httpMethod = "GET", notes = "更改当前登录用户的密码，无权限控制")
 	@ApiParam(required = true, name = "password", value = "传入新密码直接修改")
-	public void changePassword(@RequestBody String password) {
+	public void changePassword(@RequestParam("password") String password) {
+		log.info("接受到的password："+password);
 		if (!checkPasswordLength(password)) {
 			throw new InvalidPasswordException();
 		}
@@ -310,7 +311,10 @@ public class AccountResource {
 			throw new InternalServerErrorException("User could not be found");
 		}
 		attribute_values.setSave_table(resourceMapper.findResoureByResource_name(attribute_values.getResource_name()).getSave_table());
+		log.info("加密前的password："+password);
 		String encryptedPassword = passwordEncoder.encode(password);
+		log.info("加密后的password："+encryptedPassword);
+		log.info("加密前后比较："+passwordEncoder.matches(password,encryptedPassword));
 		attribute_values.setAttribute_key("password");
 		attribute_values.setValue(encryptedPassword);
 		attribute_valuesMapper.updateAttribute_values(attribute_values);
